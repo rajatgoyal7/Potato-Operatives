@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treebo Chatbot Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .booking-section, .chat-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .chat-container {
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow-y: auto;
+            padding: 15px;
+            background: white;
+            margin-bottom: 15px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .message.user {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.bot {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .message-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input input {
+            flex: 1;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .recommendations {
+            margin-top: 15px;
+        }
+
+        .recommendation-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .recommendation-item h4 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .recommendation-item .rating {
+            color: #ffc107;
+            margin-bottom: 5px;
+        }
+
+        .recommendation-item .distance {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px 15px;
+            background: #e9ecef;
+            border-radius: 10px;
+            max-width: 80%;
+            margin-bottom: 15px;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #999;
+            margin: 0 2px;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .language-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+        .language-selector select {
+            background: transparent;
+            border: none;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .quick-actions button {
+            padding: 8px 15px;
+            font-size: 12px;
+            border-radius: 20px;
+        }
+
+        .message-timestamp {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .recommendation-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .map-container {
+            height: 200px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .language-selector {
+                position: static;
+                margin-top: 10px;
+            }
+
+            .quick-actions {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="language-selector">
+                <select id="ui-language" onchange="changeUILanguage()">
+                    <option value="en">🇺🇸 English</option>
+                    <option value="hi">🇮🇳 हिंदी</option>
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="fr">🇫🇷 Français</option>
+                    <option value="de">🇩🇪 Deutsch</option>
+                    <option value="ja">🇯🇵 日本語</option>
+                </select>
+            </div>
+            <h1>🏨 Treebo Chatbot Demo</h1>
+            <p>Location-specific recommendations for hotel guests</p>
+        </div>
+
+        <div class="stats-panel">
+            <h3>System Status</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="active-sessions">0</div>
+                    <div class="stat-label">Active Sessions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="total-messages">0</div>
+                    <div class="stat-label">Messages Sent</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="recommendations-given">0</div>
+                    <div class="stat-label">Recommendations</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="system-status">🟢</div>
+                    <div class="stat-label">System Status</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="booking-section">
+                <h2 class="section-title">Create Booking</h2>
+
+                <div id="booking-status"></div>
+
+                <form id="booking-form">
+                    <div class="form-group">
+                        <label for="booking-id">Booking ID:</label>
+                        <input type="text" id="booking-id" value="TRB123456" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="guest-name">Guest Name:</label>
+                        <input type="text" id="guest-name" value="John Doe" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="guest-email">Guest Email:</label>
+                        <input type="email" id="guest-email" value="john.doe@example.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hotel-name">Hotel Name:</label>
+                        <input type="text" id="hotel-name" value="Treebo Trend Hotel" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hotel-location">Hotel Location:</label>
+                        <input type="text" id="hotel-location" value="Connaught Place, New Delhi, India" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="guest-language">Guest Language:</label>
+                        <select id="guest-language">
+                            <option value="en">English</option>
+                            <option value="hi">Hindi</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                            <option value="ja">Japanese</option>
+                            <option value="ko">Korean</option>
+                            <option value="zh">Chinese</option>
+                        </select>
+                    </div>
+
+                    <button type="submit">Create Booking & Start Chat</button>
+                </form>
+
+                <div class="recommendations" id="recommendations-section" style="display: none;">
+                    <h3>Quick Recommendations</h3>
+                    <button type="button" onclick="getRecommendations('restaurants')">🍽️ Restaurants</button>
+                    <button type="button" onclick="getRecommendations('sightseeing')">🏛️ Sightseeing</button>
+                    <button type="button" onclick="getRecommendations('events')">🎭 Events</button>
+                    <button type="button" onclick="getRecommendations('shopping')">🛍️ Shopping</button>
+                    <button type="button" onclick="getRecommendations('nightlife')">🌃 Nightlife</button>
+                </div>
+            </div>
+
+            <div class="chat-section">
+                <h2 class="section-title">Chat Interface</h2>
+
+                <div id="chat-status"></div>
+
+                <div class="quick-actions" id="quick-actions" style="display: none;">
+                    <button onclick="sendQuickMessage('Hello!')">👋 Hello</button>
+                    <button onclick="sendQuickMessage('What restaurants are nearby?')">🍽️ Restaurants</button>
+                    <button onclick="sendQuickMessage('Show me tourist attractions')">🏛️ Attractions</button>
+                    <button onclick="sendQuickMessage('Any events happening today?')">🎭 Events</button>
+                    <button onclick="sendQuickMessage('Thank you!')">🙏 Thanks</button>
+                </div>
+
+                <div class="chat-container" id="chat-container">
+                    <div class="message bot">
+                        <strong>Welcome!</strong> Create a booking to start chatting with the recommendation bot.
+                        <div class="message-timestamp" id="welcome-timestamp"></div>
+                    </div>
+                    <div class="typing-indicator" id="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+
+                <div class="message-input">
+                    <input type="text" id="message-input" placeholder="Type your message..." disabled>
+                    <button type="button" id="send-button" onclick="sendMessage()" disabled>Send</button>
+                    <button type="button" id="voice-button" onclick="toggleVoiceInput()" disabled>🎤</button>
+                </div>
+
+                <div id="recommendations-display"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000';
+        let currentSessionId = null;
+        let messageCount = 0;
+        let recommendationCount = 0;
+        let isVoiceInputActive = false;
+        let recognition = null;
+
+        // Initialize
+        document.getElementById('booking-form').addEventListener('submit', createBooking);
+        document.getElementById('message-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Set welcome timestamp
+        document.getElementById('welcome-timestamp').textContent = new Date().toLocaleTimeString();
+
+        // Initialize voice recognition if available
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('message-input').value = transcript;
+                sendMessage();
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                showStatus('chat-status', 'Voice input error. Please try again.', 'error');
+            };
+        }
+
+        // Update stats periodically
+        setInterval(updateStats, 5000);
+
+        async function createBooking(e) {
+            e.preventDefault();
+
+            const bookingData = {
+                event_type: 'booking.created',
+                booking: {
+                    booking_id: document.getElementById('booking-id').value,
+                    guest_name: document.getElementById('guest-name').value,
+                    guest_email: document.getElementById('guest-email').value,
+                    hotel_name: document.getElementById('hotel-name').value,
+                    hotel_location: document.getElementById('hotel-location').value,
+                    check_in_date: '2024-01-15',
+                    check_out_date: '2024-01-17',
+                    guest_language: document.getElementById('guest-language').value
+                }
+            };
+
+            try {
+                showStatus('booking-status', 'Creating booking...', 'info');
+
+                const response = await fetch(`${API_BASE}/webhook/booking`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    currentSessionId = result.session_id;
+                    showStatus('booking-status', `Booking created! Session ID: ${currentSessionId}`, 'success');
+                    showStatus('chat-status', 'Chat session active. You can now send messages!', 'success');
+
+                    // Enable chat interface
+                    document.getElementById('message-input').disabled = false;
+                    document.getElementById('send-button').disabled = false;
+                    document.getElementById('voice-button').disabled = false;
+                    document.getElementById('recommendations-section').style.display = 'block';
+                    document.getElementById('quick-actions').style.display = 'flex';
+
+                    // Load chat history
+                    loadChatHistory();
+
+                    // Update stats
+                    updateStats();
+                } else {
+                    showStatus('booking-status', `Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus('booking-status', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+
+            if (!message || !currentSessionId) return;
+
+            try {
+                // Add user message to chat
+                addMessageToChat('user', message);
+                messageInput.value = '';
+                messageCount++;
+
+                // Show typing indicator
+                showTypingIndicator();
+
+                const response = await fetch(`${API_BASE}/chat/message`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: currentSessionId,
+                        message: message
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Hide typing indicator
+                    hideTypingIndicator();
+
+                    // Add bot response to chat
+                    addMessageToChat('bot', result.response.message);
+
+                    // Display recommendations if available
+                    if (result.response.metadata && result.response.metadata.recommendations) {
+                        displayRecommendations(result.response.metadata.recommendations);
+                        recommendationCount += result.response.metadata.recommendations.length;
+                    }
+                } else {
+                    hideTypingIndicator();
+                    addMessageToChat('bot', `Error: ${result.error}`);
+                }
+            } catch (error) {
+                hideTypingIndicator();
+                addMessageToChat('bot', `Error: ${error.message}`);
+            }
+        }
+
+        async function getRecommendations(category) {
+            if (!currentSessionId) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/chat/recommendations/${currentSessionId}/${category}`);
+                const result = await response.json();
+
+                if (response.ok) {
+                    addMessageToChat('bot', result.message);
+                    displayRecommendations(result.recommendations);
+                } else {
+                    addMessageToChat('bot', `Error getting ${category} recommendations: ${result.error}`);
+                }
+            } catch (error) {
+                addMessageToChat('bot', `Error: ${error.message}`);
+            }
+        }
+
+        async function loadChatHistory() {
+            if (!currentSessionId) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/chat/history/${currentSessionId}`);
+                const result = await response.json();
+
+                if (response.ok) {
+                    const chatContainer = document.getElementById('chat-container');
+                    chatContainer.innerHTML = '';
+
+                    result.messages.forEach(msg => {
+                        addMessageToChat(msg.message_type, msg.content);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading chat history:', error);
+            }
+        }
+
+        function addMessageToChat(type, content) {
+            const chatContainer = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = content.replace(/\n/g, '<br>');
+
+            // Add timestamp
+            const timestamp = document.createElement('div');
+            timestamp.className = 'message-timestamp';
+            timestamp.textContent = new Date().toLocaleTimeString();
+            messageDiv.appendChild(timestamp);
+
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function displayRecommendations(recommendations) {
+            const recommendationsDisplay = document.getElementById('recommendations-display');
+
+            if (!recommendations || recommendations.length === 0) {
+                recommendationsDisplay.innerHTML = '';
+                return;
+            }
+
+            let html = '<div class="recommendations"><h3>Recommendations</h3>';
+
+            recommendations.slice(0, 3).forEach(rec => {
+                html += `
+                    <div class="recommendation-item">
+                        <h4>${rec.name || 'Unknown'}</h4>
+                        ${rec.rating ? `<div class="rating">⭐ ${rec.rating}/5</div>` : ''}
+                        ${rec.distance ? `<div class="distance">📍 ${rec.distance} km away</div>` : ''}
+                        ${rec.address ? `<div class="address">${rec.address}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            recommendationsDisplay.innerHTML = html;
+        }
+
+        function showStatus(elementId, message, type) {
+            const statusElement = document.getElementById(elementId);
+            statusElement.innerHTML = `<div class="status ${type}">${message}</div>`;
+
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    statusElement.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typing-indicator').style.display = 'block';
+            const chatContainer = document.getElementById('chat-container');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typing-indicator').style.display = 'none';
+        }
+
+        function sendQuickMessage(message) {
+            document.getElementById('message-input').value = message;
+            sendMessage();
+        }
+
+        function toggleVoiceInput() {
+            if (!recognition) {
+                showStatus('chat-status', 'Voice input not supported in this browser', 'error');
+                return;
+            }
+
+            if (isVoiceInputActive) {
+                recognition.stop();
+                isVoiceInputActive = false;
+                document.getElementById('voice-button').textContent = '🎤';
+            } else {
+                recognition.start();
+                isVoiceInputActive = true;
+                document.getElementById('voice-button').textContent = '🔴';
+                showStatus('chat-status', 'Listening... Speak now!', 'info');
+            }
+        }
+
+        function changeUILanguage() {
+            const language = document.getElementById('ui-language').value;
+            // This would typically integrate with an i18n library
+            console.log('UI Language changed to:', language);
+        }
+
+        async function updateStats() {
+            try {
+                const response = await fetch(`${API_BASE}/stats`);
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('active-sessions').textContent = stats.active_sessions || '1';
+                    document.getElementById('total-messages').textContent = messageCount;
+                    document.getElementById('recommendations-given').textContent = recommendationCount;
+                    document.getElementById('system-status').textContent = '🟢';
+                } else {
+                    document.getElementById('system-status').textContent = '🔴';
+                }
+            } catch (error) {
+                document.getElementById('system-status').textContent = '🔴';
+            }
+        }
+    </script>
+</body>
+</html>
