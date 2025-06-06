@@ -364,6 +364,12 @@
             line-height: 1.4;
         }
 
+        /* Enhanced styles for itinerary content only */
+        .message.bot .message-content.itinerary-content {
+            white-space: pre-line;
+            line-height: 1.5;
+        }
+
         .hidden {
             display: none;
         }
@@ -432,6 +438,7 @@
         let selectedLanguage = 'en';
         let userPhone = '';
         let sessionToken = '';
+        let chatSessionId = '';
         let availableBookings = [];
         let selectedBooking = null;
         let stateHistory = [];
@@ -610,6 +617,7 @@
                 selectedLanguage = 'en';
                 userPhone = '';
                 sessionToken = '';
+                chatSessionId = '';
                 availableBookings = [];
                 selectedBooking = null;
                 stateHistory = [];
@@ -655,6 +663,21 @@
             messageDiv.innerHTML = `
                 <div class="message-avatar">👤</div>
                 <div class="message-content">${text}</div>
+            `;
+
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Add itinerary message with special formatting
+        function addItineraryMessage(text) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+
+            messageDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content itinerary-content">${text}</div>
             `;
 
             messagesContainer.appendChild(messageDiv);
@@ -874,7 +897,7 @@
         }
 
         // Select booking
-        function selectBooking(index) {
+        async function selectBooking(index) {
             selectedBooking = availableBookings[index];
 
             // Visual feedback
@@ -888,12 +911,39 @@
 
             addUserMessage(`Selected: ${selectedBooking.id}`);
 
-            setTimeout(() => {
-                addBotMessage(translations[selectedLanguage].bookingSelected);
-                setTimeout(() => {
-                    showMainOptions();
-                }, 1000);
-            }, 500);
+            // Create chat session for the selected booking
+            showTyping();
+
+            try {
+                const response = await fetch('/chat/session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        booking_id: selectedBooking.id,
+                        language: selectedLanguage
+                    })
+                });
+
+                hideTyping();
+
+                if (response.ok) {
+                    const result = await response.json();
+                    chatSessionId = result.session_id;
+
+                    addBotMessage(translations[selectedLanguage].bookingSelected);
+                    setTimeout(() => {
+                        showMainOptions();
+                    }, 1000);
+                } else {
+                    const errorData = await response.json();
+                    addBotMessage(`Sorry, there was an error setting up your chat session: ${errorData.error || 'Unknown error'}`);
+                    // Allow user to try selecting another booking
+                }
+            } catch (error) {
+                hideTyping();
+                console.error('Error creating chat session:', error);
+                addBotMessage("Sorry, there was a connection error. Please try selecting your booking again.");
+            }
         }
 
         // Show main options with enhanced services
@@ -1023,94 +1073,80 @@
         function showItineraryOptions() {
             addUserMessage(translations[selectedLanguage].itinerary);
 
-            const messagesContainer = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message bot';
-
-            // Calculate stay duration
-            const checkIn = new Date(selectedBooking.check_in);
-            const checkOut = new Date(selectedBooking.check_out);
-            const stayDays = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-
-            const optionsHtml = `
-                <div class="message-avatar">🤖</div>
-                <div class="message-content">
-                    I can create a personalized itinerary for your ${stayDays}-day stay! Choose an option:
-                    <div class="option-buttons">
-                        <div class="option-button" onclick="generateItinerary(1)">📅 1-Day Itinerary</div>
-                        <div class="option-button" onclick="generateItinerary(2)">📅 2-Day Itinerary</div>
-                        <div class="option-button" onclick="generateItinerary(${stayDays})">📅 ${stayDays}-Day Full Stay</div>
-                        <div class="option-button" onclick="generateItinerary('custom')">📅 Custom Itinerary</div>
-                    </div>
-                </div>
-            `;
-
-            messageDiv.innerHTML = optionsHtml;
-            messagesContainer.appendChild(messageDiv);
-            scrollToBottom();
+            // Call the backend API to generate itinerary
+            generateItineraryFromAPI();
         }
 
-        // Generate itinerary
-        function generateItinerary(days) {
-            if (days === 'custom') {
-                addUserMessage("Custom Itinerary");
-                addBotMessage("Please tell me what you're interested in (adventure, culture, food, relaxation, etc.) and I'll create a custom itinerary for you!");
-                enableInput();
+        // Generate itinerary from backend API
+        async function generateItineraryFromAPI() {
+            if (!chatSessionId) {
+                addBotMessage("Sorry, I need a valid chat session to generate your itinerary. Please select a booking first.");
+                setTimeout(() => {
+                    // Go back to booking selection if no chat session
+                    if (availableBookings.length > 0) {
+                        showBookingOptions({ bookings: availableBookings.map(b => b.id) });
+                    } else {
+                        showMainOptions();
+                    }
+                }, 1000);
                 return;
             }
 
-            addUserMessage(`${days}-Day Itinerary`);
-
+            addBotMessage("🤖 Generating your personalized itinerary...");
             showTyping();
 
-            setTimeout(() => {
+            try {
+                const response = await fetch(`/chat/itinerary/${chatSessionId}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
                 hideTyping();
 
-                const itineraries = {
-                    1: [
-                        {
-                            day: "Day 1",
-                            activities: [
-                                "9:00 AM - Breakfast at hotel",
-                                "10:00 AM - Visit City Palace (2 hours)",
-                                "1:00 PM - Lunch at The Spice Route",
-                                "3:00 PM - Shopping at Local Market",
-                                "6:00 PM - Evening at Central Park",
-                                "8:00 PM - Dinner at Biryani House"
-                            ]
-                        }
-                    ],
-                    2: [
-                        {
-                            day: "Day 1",
-                            activities: [
-                                "9:00 AM - Breakfast at hotel",
-                                "10:00 AM - Heritage Walk (3 hours)",
-                                "2:00 PM - Lunch at Cafe Mocha",
-                                "4:00 PM - Art Museum visit",
-                                "7:00 PM - Cultural Show",
-                                "9:00 PM - Dinner at The Spice Route"
-                            ]
-                        },
-                        {
-                            day: "Day 2",
-                            activities: [
-                                "9:00 AM - Breakfast at hotel",
-                                "10:00 AM - City Palace exploration",
-                                "1:00 PM - Lunch at Pizza Corner",
-                                "3:00 PM - Shopping at City Mall",
-                                "6:00 PM - Relaxation at Central Park",
-                                "8:00 PM - Live Music Night"
-                            ]
-                        }
-                    ]
-                };
+                if (response.ok) {
+                    const result = await response.json();
 
-                // Default to 2-day if not found
-                const selectedItinerary = itineraries[days] || itineraries[2];
-                showItinerary(selectedItinerary, days);
-            }, 2000);
+                    if (result.itinerary && result.itinerary.message) {
+                        // Display the AI-generated itinerary with special formatting
+                        addItineraryMessage(result.itinerary.message);
+
+                        // Add back to menu option
+                        setTimeout(() => {
+                            const messagesContainer = document.getElementById('chatMessages');
+                            const messageDiv = document.createElement('div');
+                            messageDiv.className = 'message bot';
+
+                            const backHtml = `
+                                <div class="message-avatar">🤖</div>
+                                <div class="message-content">
+                                    <div class="option-buttons">
+                                        <div class="option-button" onclick="showMainOptions()">🔙 Back to Menu</div>
+                                    </div>
+                                </div>
+                            `;
+
+                            messageDiv.innerHTML = backHtml;
+                            messagesContainer.appendChild(messageDiv);
+                            scrollToBottom();
+                        }, 1000);
+                    } else {
+                        addBotMessage("Sorry, I couldn't generate an itinerary at the moment. Please try again later.");
+                        setTimeout(() => showMainOptions(), 1000);
+                    }
+                } else {
+                    const errorData = await response.json();
+                    addBotMessage(`Sorry, there was an error generating your itinerary: ${errorData.error || 'Unknown error'}`);
+                    setTimeout(() => showMainOptions(), 1000);
+                }
+            } catch (error) {
+                hideTyping();
+                console.error('Error calling itinerary API:', error);
+                addBotMessage("Sorry, there was a connection error. Please try again.");
+                setTimeout(() => showMainOptions(), 1000);
+            }
         }
+
+
 
         // Show travel packages
         function showTravelPackages() {
@@ -1222,47 +1258,7 @@
             scrollToBottom();
         }
 
-        // Show itinerary
-        function showItinerary(itinerary, days) {
-            const messagesContainer = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message bot';
 
-            let itineraryHtml = `
-                <div class="message-avatar">🤖</div>
-                <div class="message-content">
-                    Here's your personalized ${days}-day itinerary:
-            `;
-
-            itinerary.forEach(day => {
-                itineraryHtml += `
-                    <div class="itinerary-day">
-                        <div class="day-title">${day.day}</div>
-                        <div class="day-activities">
-                `;
-
-                day.activities.forEach(activity => {
-                    itineraryHtml += `• ${activity}<br>`;
-                });
-
-                itineraryHtml += `
-                        </div>
-                    </div>
-                `;
-            });
-
-            itineraryHtml += `
-                    <div class="option-buttons" style="margin-top: 15px;">
-                        <div class="option-button" onclick="bookItinerary()">📅 Book This Itinerary</div>
-                        <div class="option-button" onclick="customizeItinerary()">✏️ Customize</div>
-                    </div>
-                </div>
-            `;
-
-            messageDiv.innerHTML = itineraryHtml;
-            messagesContainer.appendChild(messageDiv);
-            scrollToBottom();
-        }
 
         // Show travel packages
         function showPackages(packages) {

@@ -176,6 +176,8 @@ class ChatbotService:
             return self._handle_shopping_request(booking, language)
         elif any(word in user_message_lower for word in ['nightlife', 'bar', 'club', 'night']):
             return self._handle_nightlife_request(booking, language)
+        elif any(word in user_message_lower for word in ['itinerary', 'plan', 'schedule', 'trip']):
+            return self._handle_itinerary_request(booking, language)
         else:
             return self._handle_general_request(user_message, language)
 
@@ -299,6 +301,11 @@ class ChatbotService:
             }
         }
 
+    def _handle_itinerary_request(self, booking, language):
+        """Handle itinerary creation request"""
+        # Call _create_full_itinerary directly with booking and language
+        return self._create_full_itinerary(booking, language)
+
     def _handle_general_request(self, user_message, language):
         """Handle general requests"""
         responses = {
@@ -401,3 +408,102 @@ class ChatbotService:
         except Exception as e:
             logger.error(f"Error getting chat history: {e}")
             raise
+
+    def get_itinerary(self, session_id):
+        """Generate AI-powered itinerary for a session"""
+        try:
+            chat_session = ChatSession.query.filter_by(session_id=session_id).first()
+            if not chat_session:
+                raise ValueError(f"Chat session {session_id} not found")
+
+            booking = chat_session.booking
+
+            # Use the itinerary handler to generate the itinerary
+            result = self._handle_itinerary_request(booking, chat_session.guest_language)
+
+            # Add the itinerary message to chat history
+            self._add_message(
+                chat_session.id,
+                'bot',
+                result['message'],
+                result.get('metadata', {})
+            )
+
+            # Update session timestamp
+            chat_session.updated_at = datetime.utcnow()
+            db.session.commit()
+
+            return {
+                'session_id': session_id,
+                'itinerary': result,
+                'messages': self._get_session_messages(chat_session.id)
+            }
+
+        except Exception as e:
+            logger.error(f"Error getting itinerary: {e}")
+            raise
+
+    def _create_full_itinerary(self, booking, language):
+        """Create a complete AI-powered itinerary for the user's stay"""
+
+        if not booking:
+            return {'message': 'Booking not found.'}
+
+        # Convert booking object to dictionary format expected by itinerary service
+        selected_booking = {
+            'booking_id': booking.booking_id,
+            'hotel_name': booking.hotel_name,
+            'hotel_location': booking.hotel_location,
+            'check_in_date': booking.check_in_date.isoformat() if booking.check_in_date else None,
+            'check_out_date': booking.check_out_date.isoformat() if booking.check_out_date else None,
+            'guest_name': booking.guest_name
+        }
+
+        try:
+            # Import and use the itinerary service
+            from chatbot.itinerary_service import ItineraryService
+            itinerary_service = ItineraryService()
+
+            # Show loading message first
+            hotel_name = selected_booking.get('hotel_name', 'your hotel')
+            check_in = selected_booking.get('check_in_date', selected_booking.get('check_in'))
+            check_out = selected_booking.get('check_out_date', selected_booking.get('check_out'))
+
+            loading_message = f"🤖 Generating personalized itinerary for {hotel_name}...\n\n"
+            loading_message += f"📅 {check_in} to {check_out}\n"
+            loading_message += f"🎯 Creating detailed day-by-day plans with AI\n\n"
+            loading_message += f"⏳ This may take a few moments..."
+
+            # Generate the itinerary
+            logger.info(f"Generating AI itinerary for booking {selected_booking.get('booking_id')} in language: {language}")
+            itinerary_result = itinerary_service.generate_itinerary(selected_booking, language)
+
+            # Format the result for chat
+            if itinerary_result.get('success'):
+                message = itinerary_service.format_itinerary_for_chat(itinerary_result)
+                logger.info(f"Successfully generated itinerary ({itinerary_result.get('tokens_used', 0)} tokens used)")
+            else:
+                message = f"❌ {itinerary_result.get('message', 'Not able to generate itinerary at the moment.')}\n\n"
+                message += "Type 'back' to return to recommendations menu."
+                logger.error(f"Failed to generate itinerary: {itinerary_result.get('error', 'Unknown error')}")
+
+            return {
+                'message': message,
+                'metadata': {
+                    'type': 'full_itinerary',
+                    'booking': selected_booking,
+                    'itinerary_result': itinerary_result,
+                    'options': [{'text': 'Back', 'value': 'back'}]
+                }
+            }
+
+        except Exception as e:
+            logger.error(f"Error creating itinerary: {e}")
+            return {
+                'message': f"❌ Not able to generate itinerary at the moment.\n\n"
+                           f"Type 'back' to return to recommendations menu.",
+                'metadata': {
+                    'type': 'error',
+                    'options': [{'text': 'Back', 'value': 'back'}]
+                }
+            }

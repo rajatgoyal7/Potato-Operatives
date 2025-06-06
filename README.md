@@ -166,6 +166,7 @@ In production, bookings are created by external services that send booking event
 - `POST /chat/message` - Send message to chatbot
 - `GET /chat/recommendations/{session_id}/{category}` - Get specific recommendations
 - `GET /chat/history/{session_id}` - Get chat history
+- `GET /chat/itinerary/{session_id}` - Generate AI-powered itinerary using OpenAI
 
 ### Management Endpoints
 
