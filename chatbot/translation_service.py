@@ -103,14 +103,14 @@ class TranslationService:
     def get_welcome_message(self, guest_name, hotel_name, language='en'):
         """Get welcome message in specified language"""
         messages = {
-            'en': f"Hello {guest_name}! Welcome to {hotel_name}. I'm your personal travel assistant. I can help you discover amazing restaurants, attractions, and events near your hotel. What would you like to explore?",
-            'hi': f"नमस्ते {guest_name}! {hotel_name} में आपका स्वागत है। मैं आपका व्यक्तिगत यात्रा सहायक हूं। मैं आपको आपके होटल के पास के अद्भुत रेस्तरां, आकर्षण और कार्यक्रमों की खोज में मदद कर सकता हूं। आप क्या खोजना चाहेंगे?",
-            'es': f"¡Hola {guest_name}! Bienvenido a {hotel_name}. Soy tu asistente personal de viajes. Puedo ayudarte a descubrir restaurantes increíbles, atracciones y eventos cerca de tu hotel. ¿Qué te gustaría explorar?",
-            'fr': f"Bonjour {guest_name}! Bienvenue à {hotel_name}. Je suis votre assistant de voyage personnel. Je peux vous aider à découvrir d'incroyables restaurants, attractions et événements près de votre hôtel. Que souhaitez-vous explorer?",
-            'de': f"Hallo {guest_name}! Willkommen im {hotel_name}. Ich bin Ihr persönlicher Reiseassistent. Ich kann Ihnen helfen, erstaunliche Restaurants, Sehenswürdigkeiten und Veranstaltungen in der Nähe Ihres Hotels zu entdecken. Was möchten Sie erkunden?",
-            'ja': f"こんにちは{guest_name}さん！{hotel_name}へようこそ。私はあなたの個人旅行アシスタントです。ホテル近くの素晴らしいレストラン、観光地、イベントを見つけるお手伝いをします。何を探索したいですか？",
-            'ko': f"안녕하세요 {guest_name}님! {hotel_name}에 오신 것을 환영합니다. 저는 당신의 개인 여행 도우미입니다. 호텔 근처의 멋진 레스토랑, 관광지, 이벤트를 찾는 데 도움을 드릴 수 있습니다. 무엇을 탐험하고 싶으신가요?",
-            'zh': f"你好{guest_name}！欢迎来到{hotel_name}。我是您的个人旅行助手。我可以帮助您发现酒店附近的精彩餐厅、景点和活动。您想探索什么？"
+            'en': f"Hello {guest_name}! Welcome to {hotel_name}. I'm your personal travel assistant. I can help you discover amazing restaurants, attractions, and shopping near your hotel. What would you like to explore?",
+            'hi': f"नमस्ते {guest_name}! {hotel_name} में आपका स्वागत है। मैं आपका व्यक्तिगत यात्रा सहायक हूं। मैं आपको आपके होटल के पास के अद्भुत रेस्तरां, आकर्षण और खरीदारी की खोज में मदद कर सकता हूं। आप क्या खोजना चाहेंगे?",
+            'es': f"¡Hola {guest_name}! Bienvenido a {hotel_name}. Soy tu asistente personal de viajes. Puedo ayudarte a descubrir restaurantes increíbles, atracciones y compras cerca de tu hotel. ¿Qué te gustaría explorar?",
+            'fr': f"Bonjour {guest_name}! Bienvenue à {hotel_name}. Je suis votre assistant de voyage personnel. Je peux vous aider à découvrir d'incroyables restaurants, attractions et shopping près de votre hôtel. Que souhaitez-vous explorer?",
+            'de': f"Hallo {guest_name}! Willkommen im {hotel_name}. Ich bin Ihr persönlicher Reiseassistent. Ich kann Ihnen helfen, erstaunliche Restaurants, Sehenswürdigkeiten und Einkaufsmöglichkeiten in der Nähe Ihres Hotels zu entdecken. Was möchten Sie erkunden?",
+            'ja': f"こんにちは{guest_name}さん！{hotel_name}へようこそ。私はあなたの個人旅行アシスタントです。ホテル近くの素晴らしいレストラン、観光地、ショッピングを見つけるお手伝いをします。何を探索したいですか？",
+            'ko': f"안녕하세요 {guest_name}님! {hotel_name}에 오신 것을 환영합니다. 저는 당신의 개인 여행 도우미입니다. 호텔 근처의 멋진 레스토랑, 관광지, 쇼핑을 찾는 데 도움을 드릴 수 있습니다. 무엇을 탐험하고 싶으신가요?",
+            'zh': f"你好{guest_name}！欢迎来到{hotel_name}。我是您的个人旅行助手。我可以帮助您发现酒店附近的精彩餐厅、景点和购物。您想探索什么？"
         }
         
         return messages.get(language, messages['en'])

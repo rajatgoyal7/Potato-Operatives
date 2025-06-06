@@ -60,14 +60,14 @@
             left: 20px;
             top: 50%;
             transform: translateY(-50%);
-            width: 32px;
-            height: 32px;
+            width: 48px;
+            height: 48px;
             background: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 4px;
+            padding: 6px;
         }
 
         .treebo-logo img {
@@ -85,7 +85,7 @@
             gap: 8px;
         }
 
-        .back-button, .clear-button {
+        .back-button {
             background: rgba(255, 255, 255, 0.2);
             border: none;
             color: white;
@@ -94,13 +94,10 @@
             cursor: pointer;
             font-size: 0.8rem;
             transition: background-color 0.3s ease;
-        }
-
-        .back-button {
             display: none;
         }
 
-        .back-button:hover, .clear-button:hover {
+        .back-button:hover {
             background: rgba(255, 255, 255, 0.3);
         }
 
@@ -394,6 +391,11 @@
             body {
                 padding: 0;
             }
+
+            .back-button {
+                padding: 6px 10px;
+                font-size: 0.75rem;
+            }
         }
     </style>
 </head>
@@ -405,7 +407,6 @@
             </div>
             <div class="header-buttons">
                 <button class="back-button" id="backButton" onclick="goBack()">← Back</button>
-                <button class="clear-button" id="clearButton" onclick="clearChat()">🗑️ Clear</button>
             </div>
             <h1>TravelMate</h1>
             <p>Your Treebo Travel Companion</p>
@@ -449,16 +450,21 @@
                 recommendationOptions: "What would you like to explore?",
                 restaurants: "🍽️ Restaurants",
                 sightseeing: "🏛️ Sightseeing",
-                events: "🎭 Events",
                 shopping: "🛍️ Shopping",
                 nightlife: "🌃 Nightlife",
-                atms: "🏧 ATMs",
-                hospitals: "🏥 Hospitals",
+                atms: "🏧 ATM",
                 pharmacy: "💊 Pharmacy",
                 rentals: "🚗 Car/Bike Rentals",
-                taxi: "🚕 Taxi Services",
                 itinerary: "📅 Travel Itinerary",
-                packages: "🎁 Travel Packages"
+                packages: "🎁 Travel Packages",
+                exploreMorePrompt: "Would you like to explore more options or need help with anything else?",
+                yes: "✅ Yes",
+                no: "❌ No",
+                thankYouMessage: "Thank you for using TravelMate! Have a wonderful stay at your hotel. Feel free to come back anytime if you need more assistance. Enjoy your trip! 🌟",
+                startNewChat: "🔄 Start New Chat",
+                closeChatbox: "❌ Close Chatbox",
+                changeMobileNumber: "📱 Change Mobile Number",
+                changeLanguage: "🌐 Change Language"
             },
             hi: {
                 welcome: "नमस्ते! ट्रैवलमेट में आपका स्वागत है, आपका ट्रीबो यात्रा साथी। मैं आपकी बुकिंग में मदद करने, व्यक्तिगत सुझाव देने और अद्भुत यात्रा अनुभव बनाने के लिए यहाँ हूँ।",
@@ -471,16 +477,21 @@
                 recommendationOptions: "आप क्या खोजना चाहेंगे?",
                 restaurants: "🍽️ रेस्टोरेंट",
                 sightseeing: "🏛️ दर्शनीय स्थल",
-                events: "🎭 कार्यक्रम",
                 shopping: "🛍️ खरीदारी",
                 nightlife: "🌃 नाइटलाइफ",
                 atms: "🏧 एटीएम",
-                hospitals: "🏥 अस्पताल",
                 pharmacy: "💊 दवाखाना",
                 rentals: "🚗 कार/बाइक किराया",
-                taxi: "🚕 टैक्सी सेवा",
                 itinerary: "📅 यात्रा कार्यक्रम",
-                packages: "🎁 यात्रा पैकेज"
+                packages: "🎁 यात्रा पैकेज",
+                exploreMorePrompt: "क्या आप और विकल्प देखना चाहेंगे या कुछ और मदद चाहिए?",
+                yes: "✅ हाँ",
+                no: "❌ नहीं",
+                thankYouMessage: "ट्रैवलमेट का उपयोग करने के लिए धन्यवाद! आपके होटल में आपका प्रवास शानदार हो। यदि आपको और सहायता की आवश्यकता हो तो कभी भी वापस आएं। अपनी यात्रा का आनंद लें! 🌟",
+                startNewChat: "🔄 नई चैट शुरू करें",
+                closeChatbox: "❌ चैटबॉक्स बंद करें",
+                changeMobileNumber: "📱 मोबाइल नंबर बदलें",
+                changeLanguage: "🌐 भाषा बदलें"
             },
             es: {
                 welcome: "¡Hola! Bienvenido a TravelMate, tu compañero de viaje de Treebo. Estoy aquí para ayudarte con tus reservas, brindarte recomendaciones personalizadas y crear experiencias de viaje increíbles.",
@@ -493,16 +504,21 @@
                 recommendationOptions: "¿Qué te gustaría explorar?",
                 restaurants: "🍽️ Restaurantes",
                 sightseeing: "🏛️ Turismo",
-                events: "🎭 Eventos",
                 shopping: "🛍️ Compras",
                 nightlife: "🌃 Vida nocturna",
                 atms: "🏧 Cajeros",
-                hospitals: "🏥 Hospitales",
                 pharmacy: "💊 Farmacia",
                 rentals: "🚗 Alquiler de autos/motos",
-                taxi: "🚕 Servicios de taxi",
                 itinerary: "📅 Itinerario de viaje",
-                packages: "🎁 Paquetes de viaje"
+                packages: "🎁 Paquetes de viaje",
+                exploreMorePrompt: "¿Te gustaría explorar más opciones o necesitas ayuda con algo más?",
+                yes: "✅ Sí",
+                no: "❌ No",
+                thankYouMessage: "¡Gracias por usar TravelMate! Que tengas una estancia maravillosa en tu hotel. Vuelve cuando necesites más asistencia. ¡Disfruta tu viaje! 🌟",
+                startNewChat: "🔄 Nuevo Chat",
+                closeChatbox: "❌ Cerrar Chat",
+                changeMobileNumber: "📱 Cambiar Número",
+                changeLanguage: "🌐 Cambiar Idioma"
             },
             fr: {
                 welcome: "Bonjour! Bienvenue sur TravelMate, votre compagnon de voyage Treebo. Je suis là pour vous aider avec vos réservations, fournir des recommandations personnalisées et créer des expériences de voyage incroyables.",
@@ -515,16 +531,21 @@
                 recommendationOptions: "Que souhaitez-vous explorer?",
                 restaurants: "🍽️ Restaurants",
                 sightseeing: "🏛️ Tourisme",
-                events: "🎭 Événements",
                 shopping: "🛍️ Shopping",
                 nightlife: "🌃 Vie nocturne",
                 atms: "🏧 Distributeurs",
-                hospitals: "🏥 Hôpitaux",
                 pharmacy: "💊 Pharmacie",
                 rentals: "🚗 Location auto/moto",
-                taxi: "🚕 Services de taxi",
                 itinerary: "📅 Itinéraire de voyage",
-                packages: "🎁 Forfaits voyage"
+                packages: "🎁 Forfaits voyage",
+                exploreMorePrompt: "Souhaitez-vous explorer plus d'options ou avez-vous besoin d'aide pour autre chose?",
+                yes: "✅ Oui",
+                no: "❌ Non",
+                thankYouMessage: "Merci d'avoir utilisé TravelMate! Passez un merveilleux séjour à votre hôtel. N'hésitez pas à revenir si vous avez besoin d'aide. Bon voyage! 🌟",
+                startNewChat: "🔄 Nouveau Chat",
+                closeChatbox: "❌ Fermer Chat",
+                changeMobileNumber: "📱 Changer Numéro",
+                changeLanguage: "🌐 Changer Langue"
             },
             de: {
                 welcome: "Hallo! Willkommen bei TravelMate, Ihrem Treebo Reisebegleiter. Ich bin hier, um Ihnen bei Ihren Buchungen zu helfen, personalisierte Empfehlungen zu geben und erstaunliche Reiseerlebnisse zu schaffen.",
@@ -537,16 +558,21 @@
                 recommendationOptions: "Was möchten Sie erkunden?",
                 restaurants: "🍽️ Restaurants",
                 sightseeing: "🏛️ Sightseeing",
-                events: "🎭 Veranstaltungen",
                 shopping: "🛍️ Einkaufen",
                 nightlife: "🌃 Nachtleben",
                 atms: "🏧 Geldautomaten",
-                hospitals: "🏥 Krankenhäuser",
                 pharmacy: "💊 Apotheke",
                 rentals: "🚗 Auto/Motorrad Vermietung",
-                taxi: "🚕 Taxi-Services",
                 itinerary: "📅 Reiseroute",
-                packages: "🎁 Reisepakete"
+                packages: "🎁 Reisepakete",
+                exploreMorePrompt: "Möchten Sie weitere Optionen erkunden oder benötigen Sie Hilfe bei etwas anderem?",
+                yes: "✅ Ja",
+                no: "❌ Nein",
+                thankYouMessage: "Vielen Dank für die Nutzung von TravelMate! Haben Sie einen wunderbaren Aufenthalt in Ihrem Hotel. Kommen Sie gerne zurück, wenn Sie weitere Hilfe benötigen. Genießen Sie Ihre Reise! 🌟",
+                startNewChat: "🔄 Neuer Chat",
+                closeChatbox: "❌ Chat Schließen",
+                changeMobileNumber: "📱 Nummer Ändern",
+                changeLanguage: "🌐 Sprache Ändern"
             }
         };
 
@@ -568,28 +594,51 @@
         }
 
         function goBack() {
-            if (stateHistory.length > 0) {
-                currentState = stateHistory.pop();
-                updateBackButton();
+            if (stateHistory.length === 0) {
+                return; // No history to go back to
+            }
 
-                // Handle different back scenarios
-                switch (currentState) {
-                    case 'language':
-                        showLanguageOptions();
-                        break;
-                    case 'phone':
-                        addBotMessage(translations[selectedLanguage].phonePrompt);
-                        enableInput();
-                        break;
-                    case 'booking_selection':
-                        if (availableBookings.length > 0) {
-                            showBookingOptions({ bookings: availableBookings.map(b => b.id) });
-                        }
-                        break;
-                    case 'chat':
-                        showMainOptions();
-                        break;
-                }
+            // Go back one step immediately
+            currentState = stateHistory.pop();
+            updateBackButton();
+
+            // Handle the current state after going back
+            handleBackState();
+        }
+
+        function handleBackState() {
+            // Handle the current state after going back
+            switch (currentState) {
+                case 'welcome':
+                    // Clear chat and restart
+                    const messagesContainer = document.getElementById('chatMessages');
+                    messagesContainer.innerHTML = '';
+                    disableInput();
+                    setTimeout(() => {
+                        initializeChatbot();
+                    }, 500);
+                    break;
+                case 'language':
+                    showLanguageOptions();
+                    break;
+                case 'phone':
+                    showPhonePrompt();
+                    break;
+                case 'booking_selection':
+                    if (availableBookings.length > 0) {
+                        showBookingOptions({ bookings: availableBookings.map(b => b.id) });
+                    } else {
+                        // Fallback: go back to phone input if no bookings available
+                        showPhonePrompt();
+                    }
+                    break;
+                case 'chat':
+                    showMainOptions();
+                    break;
+                default:
+                    // Fallback to main options if state is unknown
+                    showMainOptions();
+                    break;
             }
         }
 
@@ -597,40 +646,13 @@
             const backButton = document.getElementById('backButton');
             if (stateHistory.length > 0 && currentState !== 'welcome') {
                 backButton.style.display = 'block';
+                backButton.innerHTML = '← Back';
             } else {
                 backButton.style.display = 'none';
             }
         }
 
-        function clearChat() {
-            // Show confirmation dialog
-            if (confirm('Are you sure you want to clear the chat and start over?')) {
-                // Reset all state variables
-                currentState = 'welcome';
-                selectedLanguage = 'en';
-                userPhone = '';
-                sessionToken = '';
-                availableBookings = [];
-                selectedBooking = null;
-                stateHistory = [];
 
-                // Clear chat messages
-                const messagesContainer = document.getElementById('chatMessages');
-                messagesContainer.innerHTML = '';
-
-                // Reset input
-                disableInput();
-                document.getElementById('messageInput').value = '';
-
-                // Update buttons
-                updateBackButton();
-
-                // Restart the chatbot
-                setTimeout(() => {
-                    initializeChatbot();
-                }, 500);
-            }
-        }
 
         // Add message to chat
         function addBotMessage(text, isWelcome = false) {
@@ -722,9 +744,53 @@
             addUserMessage(document.querySelector(`[onclick="selectLanguage('${lang}')"]`).textContent);
 
             setTimeout(() => {
-                addBotMessage(translations[selectedLanguage].phonePrompt);
+                showPhonePrompt();
                 pushState('phone');
-                enableInput();
+            }, 500);
+        }
+
+        // Show phone prompt with change language option
+        function showPhonePrompt() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+
+            const promptHtml = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    ${translations[selectedLanguage].phonePrompt}
+                    <div class="option-buttons" style="margin-top: 15px;">
+                        <div class="option-button" onclick="changeLanguage()">${translations[selectedLanguage].changeLanguage}</div>
+                    </div>
+                </div>
+            `;
+
+            messageDiv.innerHTML = promptHtml;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+            enableInput();
+        }
+
+        // Change mobile number function
+        function changeMobileNumber() {
+            addUserMessage(translations[selectedLanguage].changeMobileNumber);
+
+            // Clear current booking data
+            userPhone = '';
+            availableBookings = [];
+            selectedBooking = null;
+
+            setTimeout(() => {
+                showPhonePrompt();
+            }, 500);
+        }
+
+        // Change language function
+        function changeLanguage() {
+            addUserMessage(translations[selectedLanguage].changeLanguage);
+
+            setTimeout(() => {
+                showLanguageOptions();
             }, 500);
         }
 
@@ -864,7 +930,11 @@
                 `;
             });
 
-            bookingsHtml += `</div>`;
+            bookingsHtml += `
+                    <div class="option-buttons" style="margin-top: 15px;">
+                        <div class="option-button" onclick="changeMobileNumber()">${translations[selectedLanguage].changeMobileNumber}</div>
+                    </div>
+                </div>`;
             messageDiv.innerHTML = bookingsHtml;
             messagesContainer.appendChild(messageDiv);
             scrollToBottom();
@@ -909,14 +979,11 @@
                     <div class="option-buttons">
                         <div class="option-button" onclick="getRecommendations('restaurants')">${translations[selectedLanguage].restaurants}</div>
                         <div class="option-button" onclick="getRecommendations('sightseeing')">${translations[selectedLanguage].sightseeing}</div>
-                        <div class="option-button" onclick="getRecommendations('events')">${translations[selectedLanguage].events}</div>
                         <div class="option-button" onclick="getRecommendations('shopping')">${translations[selectedLanguage].shopping}</div>
                         <div class="option-button" onclick="getRecommendations('nightlife')">${translations[selectedLanguage].nightlife}</div>
                         <div class="option-button" onclick="getServices('atms')">${translations[selectedLanguage].atms}</div>
-                        <div class="option-button" onclick="getServices('hospitals')">${translations[selectedLanguage].hospitals}</div>
                         <div class="option-button" onclick="getServices('pharmacy')">${translations[selectedLanguage].pharmacy}</div>
                         <div class="option-button" onclick="getServices('rentals')">${translations[selectedLanguage].rentals}</div>
-                        <div class="option-button" onclick="getServices('taxi')">${translations[selectedLanguage].taxi}</div>
                         <div class="option-button" onclick="showItineraryOptions()">${translations[selectedLanguage].itinerary}</div>
                         <div class="option-button" onclick="showTravelPackages()">${translations[selectedLanguage].packages}</div>
                     </div>
@@ -954,12 +1021,6 @@
                         { name: "Central Park", rating: "4.1⭐", distance: "0.9 km", type: "Nature", price: "Free" },
                         { name: "Heritage Walk", rating: "4.4⭐", distance: "1.8 km", type: "Guided Tour", price: "₹200" }
                     ],
-                    events: [
-                        { name: "Live Music Night", rating: "4.4⭐", distance: "1.8 km", type: "Tonight 8 PM", price: "₹500" },
-                        { name: "Art Exhibition", rating: "4.2⭐", distance: "2.3 km", type: "This Weekend", price: "₹100" },
-                        { name: "Food Festival", rating: "4.6⭐", distance: "3.1 km", type: "All Week", price: "₹300" },
-                        { name: "Cultural Show", rating: "4.5⭐", distance: "2.5 km", type: "Daily 7 PM", price: "₹400" }
-                    ],
                     shopping: [
                         { name: "City Mall", rating: "4.3⭐", distance: "1.2 km", type: "Shopping Mall", price: "Varies" },
                         { name: "Local Market", rating: "4.0⭐", distance: "0.7 km", type: "Street Shopping", price: "₹₹" },
@@ -977,7 +1038,7 @@
             }, 1500);
         }
 
-        // Get services (ATMs, hospitals, etc.)
+        // Get services (atm, hospitals, etc.)
         async function getServices(category) {
             addUserMessage(translations[selectedLanguage][category]);
 
@@ -992,11 +1053,6 @@
                         { name: "SBI ATM", rating: "4.0⭐", distance: "0.4 km", type: "24/7 Available", price: "Free" },
                         { name: "ICICI Bank ATM", rating: "4.1⭐", distance: "0.6 km", type: "24/7 Available", price: "Free" }
                     ],
-                    hospitals: [
-                        { name: "City Hospital", rating: "4.5⭐", distance: "1.2 km", type: "Multi-specialty", price: "Emergency" },
-                        { name: "Apollo Clinic", rating: "4.3⭐", distance: "0.8 km", type: "General Practice", price: "₹500" },
-                        { name: "Emergency Care", rating: "4.0⭐", distance: "2.1 km", type: "24/7 Emergency", price: "Varies" }
-                    ],
                     pharmacy: [
                         { name: "MedPlus", rating: "4.2⭐", distance: "0.3 km", type: "24/7 Pharmacy", price: "Medicines" },
                         { name: "Apollo Pharmacy", rating: "4.4⭐", distance: "0.5 km", type: "Chain Pharmacy", price: "Medicines" },
@@ -1006,11 +1062,6 @@
                         { name: "Zoomcar", rating: "4.3⭐", distance: "0.5 km", type: "Self-drive Cars", price: "₹2000/day" },
                         { name: "Bike Rental Hub", rating: "4.1⭐", distance: "0.3 km", type: "Bikes & Scooters", price: "₹500/day" },
                         { name: "Ola Rentals", rating: "4.2⭐", distance: "0.7 km", type: "Car Rentals", price: "₹1800/day" }
-                    ],
-                    taxi: [
-                        { name: "Uber", rating: "4.4⭐", distance: "Available", type: "Ride Hailing", price: "₹10/km" },
-                        { name: "Ola", rating: "4.3⭐", distance: "Available", type: "Ride Hailing", price: "₹9/km" },
-                        { name: "Local Taxi", rating: "4.0⭐", distance: "Available", type: "Traditional Taxi", price: "₹12/km" }
                     ]
                 };
 
@@ -1187,6 +1238,11 @@
             messageDiv.innerHTML = recsHtml;
             messagesContainer.appendChild(messageDiv);
             scrollToBottom();
+
+            // Add explore more options after showing recommendations
+            setTimeout(() => {
+                showExploreMoreOptions();
+            }, 1000);
         }
 
         // Show services in chat
@@ -1220,6 +1276,11 @@
             messageDiv.innerHTML = servicesHtml;
             messagesContainer.appendChild(messageDiv);
             scrollToBottom();
+
+            // Add explore more options after showing services
+            setTimeout(() => {
+                showExploreMoreOptions();
+            }, 1000);
         }
 
         // Show itinerary
@@ -1341,8 +1402,7 @@
             addBotMessage(`Perfect! I'm processing your booking for ${packageName} at ${price}. You'll receive a confirmation shortly. Our team will contact you within 30 minutes to finalize the details.`);
 
             setTimeout(() => {
-                addBotMessage("Is there anything else I can help you with today?");
-                showMainOptions();
+                showExploreMoreOptions();
             }, 2000);
         }
 
@@ -1352,9 +1412,121 @@
             addBotMessage("Excellent! I'm creating a personalized booking for your itinerary. Our travel concierge will contact you within 30 minutes to arrange all the details and provide pricing.");
 
             setTimeout(() => {
-                addBotMessage("Would you like to explore more options or need help with anything else?");
-                showMainOptions();
+                showExploreMoreOptions();
             }, 2000);
+        }
+
+        // Show explore more options with Yes/No buttons
+        function showExploreMoreOptions() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+
+            const optionsHtml = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    ${translations[selectedLanguage].exploreMorePrompt}
+                    <div class="option-buttons">
+                        <div class="option-button" onclick="handleExploreMoreResponse(true)">${translations[selectedLanguage].yes}</div>
+                        <div class="option-button" onclick="handleExploreMoreResponse(false)">${translations[selectedLanguage].no}</div>
+                    </div>
+                </div>
+            `;
+
+            messageDiv.innerHTML = optionsHtml;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Handle Yes/No response for explore more options
+        function handleExploreMoreResponse(wantsMore) {
+            if (wantsMore) {
+                addUserMessage(translations[selectedLanguage].yes);
+                setTimeout(() => {
+                    showMainOptions();
+                }, 500);
+            } else {
+                addUserMessage(translations[selectedLanguage].no);
+                setTimeout(() => {
+                    addBotMessage(translations[selectedLanguage].thankYouMessage);
+                    setTimeout(() => {
+                        showFinalOptions();
+                    }, 1000);
+                }, 500);
+            }
+        }
+
+        // Show final options: Start New Chat or Close Chatbox
+        function showFinalOptions() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+
+            const optionsHtml = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="option-buttons">
+                        <div class="option-button" onclick="startNewChat()">${translations[selectedLanguage].startNewChat}</div>
+                        <div class="option-button" onclick="closeChatbox()">${translations[selectedLanguage].closeChatbox}</div>
+                    </div>
+                </div>
+            `;
+
+            messageDiv.innerHTML = optionsHtml;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Start a new chat session
+        function startNewChat() {
+            addUserMessage(translations[selectedLanguage].startNewChat);
+
+            // Reset all state variables
+            currentState = 'welcome';
+            selectedLanguage = 'en';
+            userPhone = '';
+            sessionToken = '';
+            availableBookings = [];
+            selectedBooking = null;
+            stateHistory = [];
+
+            // Clear chat messages
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.innerHTML = '';
+
+            // Reset input
+            disableInput();
+            document.getElementById('messageInput').value = '';
+
+            // Update buttons
+            updateBackButton();
+
+            // Restart the chatbot
+            setTimeout(() => {
+                initializeChatbot();
+            }, 500);
+        }
+
+        // Close the chatbox
+        function closeChatbox() {
+            addUserMessage(translations[selectedLanguage].closeChatbox);
+
+            // Add a brief closing message
+            setTimeout(() => {
+                addBotMessage("Goodbye! 👋");
+
+                // Hide the entire chat container after a short delay
+                setTimeout(() => {
+                    const chatContainer = document.querySelector('.chat-container');
+                    if (chatContainer) {
+                        chatContainer.style.display = 'none';
+                    }
+
+                    // Alternative: You could also redirect to another page or show a different interface
+                    // window.location.href = '/';
+                    // Or show a "Chat Closed" overlay
+                }, 1000);
+            }, 500);
         }
 
         // Customize itinerary
@@ -1380,18 +1552,14 @@
                     getRecommendations('sightseeing');
                 } else if (lowerMessage.includes('shopping')) {
                     getRecommendations('shopping');
-                } else if (lowerMessage.includes('hospital') || lowerMessage.includes('medical')) {
-                    getServices('hospitals');
                 } else if (lowerMessage.includes('atm') || lowerMessage.includes('money')) {
-                    getServices('atms');
-                } else if (lowerMessage.includes('taxi') || lowerMessage.includes('cab')) {
-                    getServices('taxi');
+                    getServices('atm');
                 } else if (lowerMessage.includes('itinerary') || lowerMessage.includes('plan')) {
                     showItineraryOptions();
                 } else if (lowerMessage.includes('package') || lowerMessage.includes('tour')) {
                     showTravelPackages();
                 } else {
-                    addBotMessage("I'm here to help! You can ask me about restaurants, attractions, events, shopping, services like ATMs and hospitals, or I can create a travel itinerary for you. What interests you most?");
+                    addBotMessage("I'm here to help! You can ask me about restaurants, attractions, shopping, services like atm and pharmacy, or I can create a travel itinerary for you. What interests you most?");
                     enableInput();
                 }
             }, 1000);

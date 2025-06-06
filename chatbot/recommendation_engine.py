@@ -38,8 +38,6 @@ class RecommendationEngine:
             recommendations = self._get_restaurant_recommendations(latitude, longitude)
         elif category == 'sightseeing':
             recommendations = self._get_sightseeing_recommendations(latitude, longitude)
-        elif category == 'events':
-            recommendations = self._get_event_recommendations(latitude, longitude)
         elif category == 'shopping':
             recommendations = self._get_shopping_recommendations(latitude, longitude)
         elif category == 'nightlife':
@@ -203,32 +201,7 @@ class RecommendationEngine:
             logger.error(f"Error fetching sightseeing recommendations from Google: {e}")
             return []
     
-    def _get_event_recommendations(self, latitude, longitude):
-        """Get event recommendations (placeholder - integrate with event APIs)"""
-        # This would integrate with event APIs like Eventbrite, Meetup, etc.
-        # For now, returning sample data
-        return [
-            {
-                'name': 'Local Cultural Festival',
-                'category': 'Cultural Event',
-                'date': '2024-01-15',
-                'time': '18:00',
-                'address': 'City Center',
-                'description': 'Experience local culture and traditions',
-                'rating': 4.5,
-                'distance': 2.1
-            },
-            {
-                'name': 'Live Music Concert',
-                'category': 'Music Event',
-                'date': '2024-01-16',
-                'time': '20:00',
-                'address': 'Music Hall',
-                'description': 'Local and international artists',
-                'rating': 4.3,
-                'distance': 1.8
-            }
-        ]
+
     
     def _get_shopping_recommendations(self, latitude, longitude):
         """Get shopping recommendations using MapMyIndia API"""

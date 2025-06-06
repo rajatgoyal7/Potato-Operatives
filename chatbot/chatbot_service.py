@@ -170,8 +170,6 @@ class ChatbotService:
             return self._handle_restaurant_request(booking, language)
         elif any(word in user_message_lower for word in ['sightseeing', 'attraction', 'visit', 'see']):
             return self._handle_sightseeing_request(booking, language)
-        elif any(word in user_message_lower for word in ['event', 'show', 'concert', 'festival']):
-            return self._handle_event_request(booking, language)
         elif any(word in user_message_lower for word in ['shop', 'shopping', 'buy', 'mall']):
             return self._handle_shopping_request(booking, language)
         elif any(word in user_message_lower for word in ['nightlife', 'bar', 'club', 'night']):
@@ -229,25 +227,7 @@ class ChatbotService:
             }
         }
 
-    def _handle_event_request(self, booking, language):
-        """Handle event recommendation request"""
-        recommendations = self.recommendation_engine.get_recommendations(
-            booking.latitude,
-            booking.longitude,
-            'events',
-            language
-        )
 
-        message = self._format_recommendations_message(recommendations, 'events', language)
-
-        return {
-            'message': message,
-            'metadata': {
-                'type': 'recommendations',
-                'category': 'events',
-                'recommendations': recommendations
-            }
-        }
 
     def _handle_shopping_request(self, booking, language):
         """Handle shopping recommendation request"""
