@@ -309,6 +309,61 @@ def create_app(config_name=None):
             db.session.rollback()
             return jsonify({'error': 'Failed to clear sessions'}), 500
 
+    @app.route('/simulate/booking-event', methods=['POST'])
+    def simulate_booking_event():
+        """Endpoint to simulate external booking events for testing"""
+        try:
+            event_type = request.json.get('type', 'sample1')
+
+            if event_type == 'sample1':
+                event_data = {
+                    "message_id": f"EVT-{datetime.now().strftime('%d%m%y-%H%M')}-9199-5649",
+                    "generated_at": datetime.now().isoformat(),
+                    "events": [
+                        {
+                            "entity_name": "booking",
+                            "payload": {
+                                "booking_id": f"TEST-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                                "reference_number": f"TRB-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                                "hotel_id": "0016581",
+                                "status": "reserved",
+                                "checkin_date": "2025-06-05T14:00:00+05:30",
+                                "checkout_date": "2025-06-06T12:00:00+05:30",
+                                "source": {
+                                    "channel_code": "direct",
+                                    "application_code": "website",
+                                    "subchannel_code": "website-direct"
+                                },
+                                "customers": [
+                                    {
+                                        "customer_id": "1",
+                                        "first_name": "Test",
+                                        "last_name": "User",
+                                        "email": "test.user@example.com",
+                                        "phone": {
+                                            "number": "8904348449",
+                                            "country_code": "+91"
+                                        },
+                                        "is_primary": False,
+                                        "dummy": False
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "event_type": "booking.created"
+                }
+            else:
+                return jsonify({'error': 'Invalid event type'}), 400
+
+            # Process the event
+            result = event_handler.process_booking_event(event_data)
+            return jsonify(result), 200
+
+        except Exception as e:
+            logger.error(f"Error simulating booking event: {e}")
+            return jsonify({'error': 'Internal server error'}), 500
+
     @app.errorhandler(404)
     def not_found(error):
         return jsonify({'error': 'Endpoint not found'}), 404

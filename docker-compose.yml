@@ -12,7 +12,13 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/1
       - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      # MapMyIndia API (Primary - Free)
+      - MAPMYINDIA_API_KEY=${MAPMYINDIA_API_KEY}
+      - MAPMYINDIA_CLIENT_ID=${MAPMYINDIA_CLIENT_ID}
+      - MAPMYINDIA_CLIENT_SECRET=${MAPMYINDIA_CLIENT_SECRET}
+      # Google Places API (Fallback)
       - GOOGLE_PLACES_API_KEY=${GOOGLE_PLACES_API_KEY}
+      # Other APIs
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - FOURSQUARE_API_KEY=${FOURSQUARE_API_KEY}
       - WEBHOOK_SECRET=${WEBHOOK_SECRET}
@@ -52,7 +58,13 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/1
       - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      # MapMyIndia API (Primary - Free)
+      - MAPMYINDIA_API_KEY=${MAPMYINDIA_API_KEY}
+      - MAPMYINDIA_CLIENT_ID=${MAPMYINDIA_CLIENT_ID}
+      - MAPMYINDIA_CLIENT_SECRET=${MAPMYINDIA_CLIENT_SECRET}
+      # Google Places API (Fallback)
       - GOOGLE_PLACES_API_KEY=${GOOGLE_PLACES_API_KEY}
+      # Other APIs
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - FOURSQUARE_API_KEY=${FOURSQUARE_API_KEY}
     depends_on:

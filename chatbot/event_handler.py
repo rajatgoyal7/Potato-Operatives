@@ -4,6 +4,7 @@ from datetime import datetime
 from chatbot.models import Booking, db
 from chatbot.chatbot_service import ChatbotService
 from chatbot.translation_service import TranslationService
+from chatbot.mapmyindia_service import MapMyIndiaService
 from geopy.geocoders import Nominatim
 import hashlib
 import hmac
@@ -12,10 +13,12 @@ logger = logging.getLogger(__name__)
 
 class EventHandler:
     """Handler for processing booking events"""
-    
+
     def __init__(self):
         self.chatbot_service = ChatbotService()
         self.translation_service = TranslationService()
+        self.mapmyindia_service = MapMyIndiaService()
+        # Keep Nominatim as fallback
         self.geocoder = Nominatim(user_agent="treebo-chatbot")
     
     def verify_webhook_signature(self, payload, signature, secret):
@@ -36,8 +39,31 @@ class EventHandler:
         """Process incoming booking event"""
         try:
             event_type = event_data.get('event_type')
-            booking_data = event_data.get('booking', {})
-            
+
+            # Handle new complex event structure from external service
+            if 'events' in event_data and len(event_data['events']) > 0:
+                # Extract booking data from the events array
+                booking_event = None
+                bill_event = None
+
+                for event in event_data['events']:
+                    if event.get('entity_name') == 'booking':
+                        booking_event = event
+                    elif event.get('entity_name') == 'bill':
+                        bill_event = event
+
+                if booking_event:
+                    booking_data = booking_event.get('payload', {})
+                    # Add bill data if available
+                    if bill_event:
+                        booking_data['bill_data'] = bill_event.get('payload', {})
+                else:
+                    logger.error("No booking event found in events array")
+                    return {'status': 'error', 'message': 'No booking event found'}
+            else:
+                # Handle legacy simple event structure for backward compatibility
+                booking_data = event_data.get('booking', {})
+
             if event_type == 'booking.created':
                 return self._handle_booking_created(booking_data)
             elif event_type == 'booking.updated':
@@ -47,7 +73,7 @@ class EventHandler:
             else:
                 logger.warning(f"Unknown event type: {event_type}")
                 return {'status': 'ignored', 'message': f'Unknown event type: {event_type}'}
-                
+
         except Exception as e:
             logger.error(f"Error processing booking event: {e}")
             raise
@@ -55,30 +81,76 @@ class EventHandler:
     def _handle_booking_created(self, booking_data):
         """Handle new booking creation"""
         try:
-            # Extract booking information
+            # Extract booking information from complex event structure
             booking_id = booking_data.get('booking_id')
-            guest_name = booking_data.get('guest_name')
-            guest_email = booking_data.get('guest_email')
-            guest_phone = booking_data.get('guest_phone')
-            hotel_name = booking_data.get('hotel_name')
-            hotel_location = booking_data.get('hotel_location')
-            check_in_date = booking_data.get('check_in_date')
-            check_out_date = booking_data.get('check_out_date')
+            reference_number = booking_data.get('reference_number')
+            hotel_id = booking_data.get('hotel_id')
+
+            # Extract guest information from customers array
+            guest_name = None
+            guest_email = None
+            guest_phone = None
+
+            customers = booking_data.get('customers', [])
+            primary_customer = None
+
+            # Find primary customer (non-dummy customer with email)
+            for customer in customers:
+                if not customer.get('dummy', False) and customer.get('email'):
+                    primary_customer = customer
+                    break
+
+            if primary_customer:
+                guest_name = primary_customer.get('first_name', '')
+                if primary_customer.get('last_name'):
+                    guest_name += f" {primary_customer['last_name']}"
+                guest_email = primary_customer.get('email')
+                phone_info = primary_customer.get('phone', {})
+                if phone_info:
+                    guest_phone = f"{phone_info.get('country_code', '')}{phone_info.get('number', '')}"
+
+            # Extract hotel information from bill data if available
+            hotel_name = None
+            hotel_location = None
+
+            bill_data = booking_data.get('bill_data', {})
+            vendor_details = bill_data.get('vendor_details', {})
+
+            if vendor_details:
+                hotel_name = vendor_details.get('hotel_name') or vendor_details.get('vendor_name')
+                address_info = vendor_details.get('address', {})
+                if address_info:
+                    hotel_location = f"{address_info.get('field_1', '')}, {address_info.get('city', '')}, {address_info.get('state', '')}"
+                    hotel_location = hotel_location.strip(', ')
+
+            # Extract dates
+            check_in_date = booking_data.get('checkin_date')
+            check_out_date = booking_data.get('checkout_date')
+
+            # Convert ISO datetime to date string if needed
+            if check_in_date and 'T' in check_in_date:
+                check_in_date = check_in_date.split('T')[0]
+            if check_out_date and 'T' in check_out_date:
+                check_out_date = check_out_date.split('T')[0]
+
+            # Default language
             guest_language = booking_data.get('guest_language', 'en')
-            
+
             # Validate required fields
-            if not all([booking_id, guest_name, guest_email, hotel_name, hotel_location]):
-                raise ValueError("Missing required booking information")
-            
+            if not all([booking_id, guest_name, guest_email, hotel_name]):
+                raise ValueError(f"Missing required booking information: booking_id={booking_id}, guest_name={guest_name}, guest_email={guest_email}, hotel_name={hotel_name}")
+
             # Check if booking already exists
             existing_booking = Booking.query.filter_by(booking_id=booking_id).first()
             if existing_booking:
-                logger.info(f"Booking {booking_id} already exists, updating...")
+                logger.info(f"Booking {booking_id} already exists, creating new chat session...")
                 return self._update_existing_booking(existing_booking, booking_data)
-            
-            # Get coordinates for hotel location
-            coordinates = self._get_coordinates(hotel_location)
-            
+
+            # Get coordinates for hotel location if available
+            coordinates = {'latitude': None, 'longitude': None}
+            if hotel_location:
+                coordinates = self._get_coordinates(hotel_location)
+
             # Create new booking record
             booking = Booking(
                 booking_id=booking_id,
@@ -86,12 +158,17 @@ class EventHandler:
                 guest_email=guest_email,
                 guest_phone=guest_phone,
                 hotel_name=hotel_name,
-                hotel_location=hotel_location,
+                hotel_location=hotel_location or 'Location not provided',
                 latitude=coordinates.get('latitude'),
                 longitude=coordinates.get('longitude'),
                 check_in_date=datetime.strptime(check_in_date, '%Y-%m-%d').date() if check_in_date else None,
                 check_out_date=datetime.strptime(check_out_date, '%Y-%m-%d').date() if check_out_date else None,
-                guest_language=guest_language
+                guest_language=guest_language,
+                reference_number=reference_number,
+                hotel_id=hotel_id,
+                booking_status=booking_data.get('status', 'reserved'),
+                booking_source=booking_data.get('source'),
+                raw_event_data=booking_data  # Store raw data for debugging
             )
             
             db.session.add(booking)
@@ -221,37 +298,113 @@ class EventHandler:
             raise
     
     def _update_existing_booking(self, booking, booking_data):
-        """Update existing booking with new data"""
+        """Update existing booking with new data and create a new chat session"""
         try:
             # Update fields if provided
             if 'guest_name' in booking_data:
                 booking.guest_name = booking_data['guest_name']
-            
+
             if 'guest_email' in booking_data:
                 booking.guest_email = booking_data['guest_email']
-            
+
             if 'hotel_location' in booking_data:
                 booking.hotel_location = booking_data['hotel_location']
                 coordinates = self._get_coordinates(booking_data['hotel_location'])
                 booking.latitude = coordinates.get('latitude')
                 booking.longitude = coordinates.get('longitude')
-            
+
+            # Always create a new chat session for existing bookings too
+            from chatbot.models import ChatSession, ChatMessage
+            import uuid
+
+            # Create new chat session
+            session = ChatSession(
+                session_id=str(uuid.uuid4()),
+                booking_id=booking.id,
+                guest_language=booking.guest_language,
+                is_active=True
+            )
+
+            db.session.add(session)
             db.session.commit()
-            
+
+            logger.info(f"Created new chat session {session.session_id} for existing booking {booking.booking_id}")
+
+            # Send welcome message (replicate the logic from create_chat_session)
+            welcome_message = self.translation_service.get_welcome_message(
+                booking.guest_name,
+                booking.hotel_name,
+                booking.guest_language
+            )
+
+            # Add welcome message
+            welcome_msg = ChatMessage(
+                session_id=session.id,
+                message_type='bot',
+                content=welcome_message,
+                message_metadata={'type': 'welcome', 'booking_id': booking.booking_id}
+            )
+            db.session.add(welcome_msg)
+
+            # Send category options
+            category_options = self.translation_service.get_category_options(booking.guest_language)
+            options_message = self._format_category_options(category_options, booking.guest_language)
+
+            options_msg = ChatMessage(
+                session_id=session.id,
+                message_type='bot',
+                content=options_message,
+                message_metadata={'type': 'category_options', 'options': category_options}
+            )
+            db.session.add(options_msg)
+
+            db.session.commit()
+
             return {
-                'status': 'updated',
-                'message': 'Existing booking updated',
-                'booking_id': booking.booking_id
+                'status': 'success',
+                'message': 'Booking updated and new chat session created',
+                'booking_id': booking.booking_id,
+                'session_id': session.session_id,
+                'coordinates': {
+                    'latitude': booking.latitude,
+                    'longitude': booking.longitude
+                }
             }
-            
+
         except Exception as e:
             logger.error(f"Error updating existing booking: {e}")
             db.session.rollback()
             raise
+
+    def _format_category_options(self, options, language):
+        """Format category options message"""
+        headers = {
+            'en': "What would you like to explore? Choose from:",
+            'hi': "आप क्या खोजना चाहेंगे? इनमें से चुनें:",
+            'es': "¿Qué te gustaría explorar? Elige entre:",
+            'fr': "Que souhaitez-vous explorer? Choisissez parmi:"
+        }
+
+        message = headers.get(language, headers['en']) + "\n\n"
+
+        for key, value in options.items():
+            message += f"• {value}\n"
+
+        return message
     
     def _get_coordinates(self, location_string):
-        """Get latitude and longitude for a location"""
+        """Get latitude and longitude for a location using MapMyIndia API"""
         try:
+            # Try MapMyIndia first
+            result = self.mapmyindia_service.geocode_location(location_string)
+            if result and result.get('latitude') and result.get('longitude'):
+                return {
+                    'latitude': result['latitude'],
+                    'longitude': result['longitude']
+                }
+
+            # Fallback to Nominatim
+            logger.info(f"MapMyIndia geocoding failed, trying Nominatim for: {location_string}")
             location = self.geocoder.geocode(location_string)
             if location:
                 return {
@@ -259,9 +412,9 @@ class EventHandler:
                     'longitude': location.longitude
                 }
             else:
-                logger.warning(f"Could not geocode location: {location_string}")
+                logger.warning(f"Could not geocode location with any service: {location_string}")
                 return {'latitude': None, 'longitude': None}
-                
+
         except Exception as e:
             logger.error(f"Error geocoding location {location_string}: {e}")
             return {'latitude': None, 'longitude': None}

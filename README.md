@@ -57,10 +57,26 @@ cp .env.example .env
 Edit `.env` file with your API keys:
 
 ```bash
+# MapMyIndia API (Primary - Free)
+MAPMYINDIA_API_KEY=your-mapmyindia-api-key
+MAPMYINDIA_CLIENT_ID=your-mapmyindia-client-id
+MAPMYINDIA_CLIENT_SECRET=your-mapmyindia-client-secret
+
+# Google Places API (Fallback - Optional)
 GOOGLE_PLACES_API_KEY=your-google-places-api-key
+
+# OpenAI API
 OPENAI_API_KEY=your-openai-api-key
+
+# Webhook Security
 WEBHOOK_SECRET=your-webhook-secret
 ```
+
+**Getting MapMyIndia API Keys (Free):**
+1. Visit [MapMyIndia Developer Portal](https://www.mapmyindia.com/api/)
+2. Sign up for a free account
+3. Create a new project and get your API key, Client ID, and Client Secret
+4. MapMyIndia provides free tier with generous limits for Indian locations
 
 ### 3. Start Services
 
@@ -98,6 +114,31 @@ curl -X POST http://localhost:5000/webhook/booking \
   }'
 ```
 
+## Usage
+
+### Web Interface
+
+1. **Open your browser and navigate to:**
+   ```
+   http://localhost:5000
+   ```
+
+2. **Simulate a booking event** using the provided buttons:
+   - Click "Sample Booking 1" or "Sample Booking 2" for predefined events
+   - Use "Custom Event" to test with your own JSON structure
+
+3. **Start chatting** with the recommendation bot after the booking is processed
+
+4. **Ask for recommendations** like:
+   - "What restaurants are nearby?"
+   - "Show me tourist attractions"
+   - "Any events happening today?"
+   - "Where can I go shopping?"
+
+### Production Integration
+
+In production, bookings are created by external services that send booking events to the webhook endpoint. The UI booking creation is disabled and replaced with event simulation for testing purposes.
+
 ## API Endpoints
 
 ### Webhook Endpoints
@@ -120,7 +161,64 @@ curl -X POST http://localhost:5000/webhook/booking \
 
 ## Event Format
 
-### Booking Created Event
+### External Booking Created Event (New Format)
+
+The system now handles complex booking events from external services with the following structure:
+
+```json
+{
+  "message_id": "EVT-050625-1121-9199-5649",
+  "generated_at": "2025-06-05T16:51:39.745904+05:30",
+  "events": [
+    {
+      "entity_name": "booking",
+      "payload": {
+        "booking_id": "3387-8193-5572",
+        "reference_number": "TRB-17491224854750",
+        "hotel_id": "0016581",
+        "status": "reserved",
+        "checkin_date": "2025-06-05T14:00:00+05:30",
+        "checkout_date": "2025-06-06T12:00:00+05:30",
+        "source": {
+          "channel_code": "direct",
+          "application_code": "website",
+          "subchannel_code": "website-direct"
+        },
+        "customers": [
+          {
+            "customer_id": "1",
+            "first_name": "Vivek",
+            "last_name": "Yadav",
+            "email": "vivekyadav.9991+11@gmail.com",
+            "phone": {
+              "number": "8904348449",
+              "country_code": "+91"
+            },
+            "is_primary": false,
+            "dummy": false
+          }
+        ]
+      }
+    },
+    {
+      "entity_name": "bill",
+      "payload": {
+        "vendor_details": {
+          "hotel_name": "Treebo Club Worldtree Staging",
+          "address": {
+            "field_1": "#204, Prashant Extension, Near Hope Farm Whitefield",
+            "city": "Bangalore",
+            "state": "Karnataka"
+          }
+        }
+      }
+    }
+  ],
+  "event_type": "booking.created"
+}
+```
+
+### Legacy Booking Created Event (Backward Compatible)
 
 ```json
 {
@@ -157,6 +255,28 @@ curl -X POST http://localhost:5000/webhook/booking \
 - **Events** - Local events, concerts, festivals
 - **Shopping** - Malls, markets, shopping centers
 - **Nightlife** - Bars, clubs, entertainment venues
+
+## MapMyIndia Integration
+
+This system now uses **MapMyIndia API** as the primary mapping service, providing several advantages:
+
+### Benefits:
+- **Free Tier**: Generous free usage limits for Indian locations
+- **Local Expertise**: Better coverage and accuracy for Indian addresses and landmarks
+- **Cost Effective**: No charges for basic geocoding and place search operations
+- **Indian Focus**: Optimized for Indian geography and local businesses
+
+### Features:
+- **Geocoding**: Convert addresses to coordinates and vice versa
+- **Nearby Search**: Find restaurants, attractions, shopping centers, etc.
+- **Place Details**: Get additional information about places
+- **Fallback Support**: Automatically falls back to Google Places API if needed
+
+### API Coverage:
+- Geocoding and Reverse Geocoding
+- Nearby Places Search with categories
+- Place Details and Information
+- Distance Calculations
 
 ## Development
 
@@ -217,7 +337,10 @@ treebo-chatbot/
 | `FLASK_ENV` | Flask environment | `development` |
 | `DATABASE_URL` | PostgreSQL connection string | `sqlite:///treebo_chatbot.db` |
 | `REDIS_URL` | Redis connection string | `redis://localhost:6379/0` |
-| `GOOGLE_PLACES_API_KEY` | Google Places API key | Required |
+| `MAPMYINDIA_API_KEY` | MapMyIndia API key (Primary) | Required |
+| `MAPMYINDIA_CLIENT_ID` | MapMyIndia Client ID | Required |
+| `MAPMYINDIA_CLIENT_SECRET` | MapMyIndia Client Secret | Required |
+| `GOOGLE_PLACES_API_KEY` | Google Places API key (Fallback) | Optional |
 | `WEBHOOK_SECRET` | Webhook signature verification | Optional |
 | `DEFAULT_LANGUAGE` | Default guest language | `en` |
 | `RECOMMENDATION_RADIUS` | Search radius in meters | `5000` |

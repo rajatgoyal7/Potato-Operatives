@@ -317,6 +317,66 @@
             color: #666;
         }
 
+        .section-description {
+            color: #666;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .event-simulation {
+            margin-top: 20px;
+        }
+
+        .simulation-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .sim-button {
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .sim-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .sim-button small {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        #custom-event-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            margin-top: 15px;
+        }
+
+        #custom-event-json {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -333,6 +393,10 @@
 
             .quick-actions {
                 justify-content: center;
+            }
+
+            .simulation-buttons {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -378,52 +442,41 @@
 
         <div class="main-content">
             <div class="booking-section">
-                <h2 class="section-title">Create Booking</h2>
+                <h2 class="section-title">Booking Event Simulation</h2>
+                <p class="section-description">
+                    Bookings are now created by external services. Use the buttons below to simulate booking events for testing.
+                </p>
 
                 <div id="booking-status"></div>
 
-                <form id="booking-form">
-                    <div class="form-group">
-                        <label for="booking-id">Booking ID:</label>
-                        <input type="text" id="booking-id" value="TRB123456" required>
+                <div class="event-simulation">
+                    <h3>Simulate Booking Events</h3>
+
+                    <div class="simulation-buttons">
+                        <button type="button" onclick="simulateBookingEvent('sample1')" class="sim-button">
+                            📅 Sample Booking 1<br>
+                            <small>Treebo Club Worldtree - Bangalore</small>
+                        </button>
+
+                        <button type="button" onclick="simulateBookingEvent('sample2')" class="sim-button">
+                            📅 Sample Booking 2<br>
+                            <small>Treebo Trend Hotel - Delhi</small>
+                        </button>
+
+                        <button type="button" onclick="simulateBookingEvent('custom')" class="sim-button">
+                            🔧 Custom Event<br>
+                            <small>Use provided JSON structure</small>
+                        </button>
                     </div>
 
-                    <div class="form-group">
-                        <label for="guest-name">Guest Name:</label>
-                        <input type="text" id="guest-name" value="John Doe" required>
+                    <div id="custom-event-section" style="display: none;">
+                        <h4>Custom Event JSON</h4>
+                        <textarea id="custom-event-json" rows="10" cols="80" placeholder="Paste your booking event JSON here..."></textarea>
+                        <br>
+                        <button type="button" onclick="sendCustomEvent()">Send Custom Event</button>
+                        <button type="button" onclick="hideCustomEvent()">Cancel</button>
                     </div>
-
-                    <div class="form-group">
-                        <label for="guest-email">Guest Email:</label>
-                        <input type="email" id="guest-email" value="john.doe@example.com" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="hotel-name">Hotel Name:</label>
-                        <input type="text" id="hotel-name" value="Treebo Trend Hotel" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="hotel-location">Hotel Location:</label>
-                        <input type="text" id="hotel-location" value="Connaught Place, New Delhi, India" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="guest-language">Guest Language:</label>
-                        <select id="guest-language">
-                            <option value="en">English</option>
-                            <option value="hi">Hindi</option>
-                            <option value="es">Spanish</option>
-                            <option value="fr">French</option>
-                            <option value="de">German</option>
-                            <option value="ja">Japanese</option>
-                            <option value="ko">Korean</option>
-                            <option value="zh">Chinese</option>
-                        </select>
-                    </div>
-
-                    <button type="submit">Create Booking & Start Chat</button>
-                </form>
+                </div>
 
                 <div class="recommendations" id="recommendations-section" style="display: none;">
                     <h3>Quick Recommendations</h3>
@@ -450,7 +503,7 @@
 
                 <div class="chat-container" id="chat-container">
                     <div class="message bot">
-                        <strong>Welcome!</strong> Create a booking to start chatting with the recommendation bot.
+                        <strong>Welcome!</strong> Simulate a booking event to start chatting with the recommendation bot.
                         <div class="message-timestamp" id="welcome-timestamp"></div>
                     </div>
                     <div class="typing-indicator" id="typing-indicator">
@@ -461,7 +514,7 @@
                 </div>
 
                 <div class="message-input">
-                    <input type="text" id="message-input" placeholder="Type your message..." disabled>
+                    <input type="text" id="message-input" placeholder="Create a booking first to start chatting..." disabled>
                     <button type="button" id="send-button" onclick="sendMessage()" disabled>Send</button>
                     <button type="button" id="voice-button" onclick="toggleVoiceInput()" disabled>🎤</button>
                 </div>
@@ -480,11 +533,16 @@
         let recognition = null;
 
         // Initialize
-        document.getElementById('booking-form').addEventListener('submit', createBooking);
         document.getElementById('message-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 sendMessage();
             }
+        });
+
+        // Add click handler to send button (backup to onclick)
+        document.getElementById('send-button').addEventListener('click', function(e) {
+            e.preventDefault();
+            sendMessage();
         });
 
         // Set welcome timestamp
@@ -513,47 +571,68 @@
         // Update stats periodically
         setInterval(updateStats, 5000);
 
-        async function createBooking(e) {
-            e.preventDefault();
+        async function simulateBookingEvent(eventType) {
+            let eventData;
 
-            const bookingData = {
-                event_type: 'booking.created',
-                booking: {
-                    booking_id: document.getElementById('booking-id').value,
-                    guest_name: document.getElementById('guest-name').value,
-                    guest_email: document.getElementById('guest-email').value,
-                    hotel_name: document.getElementById('hotel-name').value,
-                    hotel_location: document.getElementById('hotel-location').value,
-                    check_in_date: '2024-01-15',
-                    check_out_date: '2024-01-17',
-                    guest_language: document.getElementById('guest-language').value
-                }
-            };
+            if (eventType === 'sample1') {
+                eventData = getSampleBookingEvent1();
+            } else if (eventType === 'sample2') {
+                eventData = getSampleBookingEvent2();
+            } else if (eventType === 'custom') {
+                document.getElementById('custom-event-section').style.display = 'block';
+                return;
+            }
+
+            await sendBookingEvent(eventData);
+        }
+
+        async function sendCustomEvent() {
+            const customJson = document.getElementById('custom-event-json').value;
 
             try {
-                showStatus('booking-status', 'Creating booking...', 'info');
+                const eventData = JSON.parse(customJson);
+                await sendBookingEvent(eventData);
+                hideCustomEvent();
+            } catch (error) {
+                showStatus('booking-status', `Invalid JSON: ${error.message}`, 'error');
+            }
+        }
+
+        function hideCustomEvent() {
+            document.getElementById('custom-event-section').style.display = 'none';
+            document.getElementById('custom-event-json').value = '';
+        }
+
+        async function sendBookingEvent(eventData) {
+            try {
+                showStatus('booking-status', 'Processing booking event...', 'info');
 
                 const response = await fetch(`${API_BASE}/webhook/booking`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(bookingData)
+                    body: JSON.stringify(eventData)
                 });
 
                 const result = await response.json();
 
                 if (response.ok) {
                     currentSessionId = result.session_id;
-                    showStatus('booking-status', `Booking created! Session ID: ${currentSessionId}`, 'success');
-                    showStatus('chat-status', 'Chat session active. You can now send messages!', 'success');
+                    showStatus('booking-status', `✅ Booking processed! Session ID: ${currentSessionId}`, 'success');
+                    showStatus('chat-status', '🎉 Chat is now active! You can send messages below.', 'success');
 
                     // Enable chat interface
-                    document.getElementById('message-input').disabled = false;
+                    const messageInput = document.getElementById('message-input');
+                    messageInput.disabled = false;
+                    messageInput.placeholder = 'Type your message here...';
                     document.getElementById('send-button').disabled = false;
                     document.getElementById('voice-button').disabled = false;
                     document.getElementById('recommendations-section').style.display = 'block';
                     document.getElementById('quick-actions').style.display = 'flex';
+
+                    // Focus on the input field
+                    messageInput.focus();
 
                     // Load chat history
                     loadChatHistory();
@@ -572,7 +651,19 @@
             const messageInput = document.getElementById('message-input');
             const message = messageInput.value.trim();
 
-            if (!message || !currentSessionId) return;
+            // Debug logging
+            console.log('sendMessage called:', { message, currentSessionId });
+
+            if (!message) {
+                console.log('No message to send');
+                return;
+            }
+
+            if (!currentSessionId) {
+                console.log('No session ID - please create a booking first');
+                showStatus('chat-status', 'Please create a booking first by clicking one of the sample booking buttons above!', 'error');
+                return;
+            }
 
             try {
                 // Add user message to chat
@@ -763,6 +854,141 @@
                 document.getElementById('system-status').textContent = '🔴';
             }
         }
+
+        function getSampleBookingEvent1() {
+            const timestamp = Date.now();
+            return {
+                "message_id": `EVT-${timestamp}-1`,
+                "generated_at": new Date().toISOString(),
+                "events": [
+                    {
+                        "entity_name": "booking",
+                        "payload": {
+                            "booking_id": `SAMPLE1-${timestamp}`,
+                            "reference_number": `TRB-SAMPLE1-${timestamp}`,
+                            "hotel_id": "0016581",
+                            "status": "reserved",
+                            "checkin_date": "2025-06-05T14:00:00+05:30",
+                            "checkout_date": "2025-06-06T12:00:00+05:30",
+                            "source": {
+                                "channel_code": "direct",
+                                "application_code": "website",
+                                "subchannel_code": "website-direct"
+                            },
+                            "customers": [
+                                {
+                                    "customer_id": "1",
+                                    "first_name": "Vivek",
+                                    "last_name": "Yadav",
+                                    "email": "vivek.yadav@example.com",
+                                    "phone": {
+                                        "number": "8904348449",
+                                        "country_code": "+91"
+                                    },
+                                    "is_primary": false,
+                                    "dummy": false
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "entity_name": "bill",
+                        "payload": {
+                            "vendor_details": {
+                                "hotel_name": "Treebo Club Worldtree Staging",
+                                "vendor_name": "Treebo Club Worldtree Staging",
+                                "address": {
+                                    "field_1": "#204, Prashant Extension, Near Hope Farm Whitefield",
+                                    "city": "Bangalore",
+                                    "state": "Karnataka",
+                                    "pincode": "560066"
+                                },
+                                "phone": {
+                                    "number": "9322800100",
+                                    "country_code": "+91"
+                                },
+                                "email": "hello@treebohotels.com"
+                            }
+                        }
+                    }
+                ],
+                "event_type": "booking.created"
+            };
+        }
+
+        function getSampleBookingEvent2() {
+            const timestamp = Date.now();
+            return {
+                "message_id": `EVT-${timestamp}-2`,
+                "generated_at": new Date().toISOString(),
+                "events": [
+                    {
+                        "entity_name": "booking",
+                        "payload": {
+                            "booking_id": `SAMPLE2-${timestamp}`,
+                            "reference_number": `TRB-SAMPLE2-${timestamp}`,
+                            "hotel_id": "0016582",
+                            "status": "reserved",
+                            "checkin_date": "2025-06-06T14:00:00+05:30",
+                            "checkout_date": "2025-06-08T12:00:00+05:30",
+                            "source": {
+                                "channel_code": "direct",
+                                "application_code": "mobile",
+                                "subchannel_code": "mobile-app"
+                            },
+                            "customers": [
+                                {
+                                    "customer_id": "2",
+                                    "first_name": "John",
+                                    "last_name": "Doe",
+                                    "email": "john.doe@example.com",
+                                    "phone": {
+                                        "number": "9876543210",
+                                        "country_code": "+91"
+                                    },
+                                    "is_primary": false,
+                                    "dummy": false
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "entity_name": "bill",
+                        "payload": {
+                            "vendor_details": {
+                                "hotel_name": "Treebo Trend Hotel",
+                                "vendor_name": "Treebo Trend Hotel",
+                                "address": {
+                                    "field_1": "Connaught Place",
+                                    "city": "New Delhi",
+                                    "state": "Delhi",
+                                    "pincode": "110001"
+                                },
+                                "phone": {
+                                    "number": "9322800100",
+                                    "country_code": "+91"
+                                },
+                                "email": "hello@treebohotels.com"
+                            }
+                        }
+                    }
+                ],
+                "event_type": "booking.created"
+            };
+        }
+
+        // Debug function to check current state
+        function debugChatState() {
+            console.log('=== Chat Debug Info ===');
+            console.log('Current Session ID:', currentSessionId);
+            console.log('Message Input Disabled:', document.getElementById('message-input').disabled);
+            console.log('Send Button Disabled:', document.getElementById('send-button').disabled);
+            console.log('Message Input Value:', document.getElementById('message-input').value);
+            console.log('======================');
+        }
+
+        // Make debug function available globally
+        window.debugChatState = debugChatState;
     </script>
 </body>
 </html>

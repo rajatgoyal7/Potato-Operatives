@@ -16,9 +16,17 @@ class Booking(db.Model):
     hotel_location = db.Column(db.String(500), nullable=False)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
-    check_in_date = db.Column(db.Date, nullable=False)
-    check_out_date = db.Column(db.Date, nullable=False)
+    check_in_date = db.Column(db.Date)
+    check_out_date = db.Column(db.Date)
     guest_language = db.Column(db.String(10), default='en')
+
+    # Additional fields for external booking events
+    reference_number = db.Column(db.String(100))  # External reference number
+    hotel_id = db.Column(db.String(50))  # External hotel ID
+    booking_status = db.Column(db.String(50), default='reserved')  # Booking status
+    booking_source = db.Column(JSON)  # Source information (channel, application, etc.)
+    raw_event_data = db.Column(JSON)  # Store raw event data for debugging
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships
@@ -30,13 +38,18 @@ class Booking(db.Model):
             'booking_id': self.booking_id,
             'guest_name': self.guest_name,
             'guest_email': self.guest_email,
+            'guest_phone': self.guest_phone,
             'hotel_name': self.hotel_name,
             'hotel_location': self.hotel_location,
             'latitude': self.latitude,
             'longitude': self.longitude,
             'check_in_date': self.check_in_date.isoformat() if self.check_in_date else None,
             'check_out_date': self.check_out_date.isoformat() if self.check_out_date else None,
-            'guest_language': self.guest_language
+            'guest_language': self.guest_language,
+            'reference_number': self.reference_number,
+            'hotel_id': self.hotel_id,
+            'booking_status': self.booking_status,
+            'booking_source': self.booking_source
         }
 
 class ChatSession(db.Model):

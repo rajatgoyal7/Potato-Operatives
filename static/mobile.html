@@ -377,23 +377,70 @@
         async function startChat() {
             try {
                 showStatus('Creating your session...', 'info');
-                
+
+                // Use new event structure for mobile
+                const eventData = {
+                    "message_id": `EVT-MOBILE-${Date.now()}`,
+                    "generated_at": new Date().toISOString(),
+                    "events": [
+                        {
+                            "entity_name": "booking",
+                            "payload": {
+                                "booking_id": `MOBILE-${Date.now()}`,
+                                "reference_number": `TRB-MOBILE-${Date.now()}`,
+                                "hotel_id": "0016581",
+                                "status": "reserved",
+                                "checkin_date": new Date().toISOString(),
+                                "checkout_date": new Date(Date.now() + 86400000).toISOString(),
+                                "source": {
+                                    "channel_code": "direct",
+                                    "application_code": "mobile",
+                                    "subchannel_code": "mobile-app"
+                                },
+                                "customers": [
+                                    {
+                                        "customer_id": "1",
+                                        "first_name": "Mobile",
+                                        "last_name": "User",
+                                        "email": "mobile.user@example.com",
+                                        "phone": {
+                                            "number": "9876543210",
+                                            "country_code": "+91"
+                                        },
+                                        "is_primary": false,
+                                        "dummy": false
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "entity_name": "bill",
+                            "payload": {
+                                "vendor_details": {
+                                    "hotel_name": "Treebo Mobile Demo Hotel",
+                                    "vendor_name": "Treebo Mobile Demo Hotel",
+                                    "address": {
+                                        "field_1": "Demo Location",
+                                        "city": "Demo City",
+                                        "state": "Demo State",
+                                        "pincode": "123456"
+                                    },
+                                    "phone": {
+                                        "number": "9322800100",
+                                        "country_code": "+91"
+                                    },
+                                    "email": "hello@treebohotels.com"
+                                }
+                            }
+                        }
+                    ],
+                    "event_type": "booking.created"
+                };
+
                 const response = await fetch(`${API_BASE}/webhook/booking`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        event_type: 'booking.created',
-                        booking: {
-                            booking_id: 'MOBILE_' + Date.now(),
-                            guest_name: 'Mobile User',
-                            guest_email: 'mobile@example.com',
-                            hotel_name: 'Treebo Hotel',
-                            hotel_location: 'City Center',
-                            check_in_date: new Date().toISOString().split('T')[0],
-                            check_out_date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-                            guest_language: 'en'
-                        }
-                    })
+                    body: JSON.stringify(eventData)
                 });
                 
                 const result = await response.json();
