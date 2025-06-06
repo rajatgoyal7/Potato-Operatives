@@ -164,6 +164,21 @@ def create_app(config_name=None):
             logger.error(f"Error getting chat history: {e}")
             return jsonify({'error': 'Internal server error'}), 500
 
+    @app.route('/chat/itinerary/<session_id>', methods=['GET'])
+    def get_itinerary(session_id):
+        """Generate AI-powered itinerary for a session"""
+        try:
+            result = chatbot_service.get_itinerary(session_id)
+
+            return jsonify(result), 200
+
+        except ValueError as e:
+            logger.error(f"Validation error getting itinerary: {e}")
+            return jsonify({'error': str(e)}), 400
+        except Exception as e:
+            logger.error(f"Error getting itinerary: {e}")
+            return jsonify({'error': 'Internal server error'}), 500
+
     @app.route('/booking/<booking_id>', methods=['GET'])
     def get_booking(booking_id):
         """Get booking information"""
