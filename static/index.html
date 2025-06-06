@@ -386,6 +386,274 @@
             }
         }
 
+        /* Interactive Recommendation Cards */
+        .recommendations-grid {
+            display: grid;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .interactive-recommendation-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .interactive-recommendation-card:hover {
+            border-color: #4CAF50;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .place-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+            flex: 1;
+            margin-right: 12px;
+        }
+
+        .rating-badge {
+            background: #ff9800;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .ai-description {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.4;
+            margin: 8px 0 12px 0;
+            font-style: italic;
+        }
+
+        .place-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .detail-icon {
+            margin-right: 6px;
+            font-size: 0.9rem;
+        }
+
+        .detail-text {
+            flex: 1;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .maps-btn {
+            background: #4285f4;
+            color: white;
+        }
+
+        .maps-btn:hover {
+            background: #3367d6;
+        }
+
+        .details-btn {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .details-btn:hover {
+            background: #e8f5e8;
+            border-color: #4CAF50;
+            color: #4CAF50;
+        }
+
+        /* Place Details Modal */
+        .place-details-modal {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 8px 0;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #333;
+            font-size: 1.3rem;
+            flex: 1;
+            margin-right: 12px;
+        }
+
+        .rating-large {
+            background: #ff9800;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .modal-section {
+            margin-bottom: 16px;
+        }
+
+        .modal-section h3 {
+            margin: 0 0 8px 0;
+            color: #4CAF50;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .ai-description-full {
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.5;
+            margin: 0;
+            font-style: italic;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 8px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 500;
+            color: #666;
+            min-width: 120px;
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .info-value a {
+            color: #4285f4;
+            text-decoration: none;
+        }
+
+        .info-value a:hover {
+            text-decoration: underline;
+        }
+
+        .address-text {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        .opening-hours {
+            display: grid;
+            gap: 4px;
+        }
+
+        .hour-item {
+            font-size: 0.85rem;
+            color: #555;
+            padding: 4px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .hour-item:last-child {
+            border-bottom: none;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .action-btn.primary {
+            background: #4CAF50;
+            color: white;
+            flex: 2;
+        }
+
+        .action-btn.primary:hover {
+            background: #45a049;
+        }
+
+        .action-btn.secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            flex: 1;
+        }
+
+        .action-btn.secondary:hover {
+            background: #e8f5e8;
+            border-color: #4CAF50;
+            color: #4CAF50;
+        }
+
         /* Mobile responsiveness */
         @media (max-width: 480px) {
             .chat-container {
@@ -401,6 +669,23 @@
             .back-button {
                 padding: 6px 10px;
                 font-size: 0.75rem;
+            }
+
+            .place-details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card-actions {
+                flex-direction: column;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+
+            .action-btn.primary,
+            .action-btn.secondary {
+                flex: 1;
             }
         }
     </style>
@@ -1298,7 +1583,7 @@
             }, 1500);
         }
 
-        // Show recommendations in chat
+        // Show recommendations in chat with interactive cards
         function showRecommendations(recommendations, category) {
             const messagesContainer = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
@@ -1308,27 +1593,64 @@
                 <div class="message-avatar">🤖</div>
                 <div class="message-content">
                     Here are great ${category} near your hotel:
+                    <div class="recommendations-grid">
             `;
 
-            recommendations.forEach(rec => {
+            recommendations.forEach((rec, index) => {
+                const mapsLink = rec.maps_link || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(rec.name + ' ' + (rec.address || ''))}`;
+
                 recsHtml += `
-                    <div class="recommendation-card">
-                        <div class="rec-name">${rec.name}</div>
-                        <div class="rec-details">
-                            <span>${rec.type}</span>
-                            <span>${rec.rating} • ${rec.distance}</span>
+                    <div class="interactive-recommendation-card" onclick="showPlaceDetails(${index}, '${category}')">
+                        <div class="card-header">
+                            <h3 class="place-name">${rec.name}</h3>
+                            <div class="rating-badge">${rec.rating}</div>
                         </div>
-                        <div class="rec-details">
-                            <span class="price-tag">${rec.price}</span>
+
+                        <div class="card-content">
+                            <div class="place-details-grid">
+                                <div class="detail-item">
+                                    <span class="detail-icon">📍</span>
+                                    <span class="detail-text">${rec.distance}</span>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span class="detail-icon">🏷️</span>
+                                    <span class="detail-text">${rec.type}</span>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span class="detail-icon">💰</span>
+                                    <span class="detail-text">${rec.estimated_pricing || rec.price}</span>
+                                </div>
+
+                                ${rec.visit_duration ? `
+                                <div class="detail-item">
+                                    <span class="detail-icon">⏱️</span>
+                                    <span class="detail-text">${rec.visit_duration}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div class="card-actions">
+                            <button class="action-btn maps-btn" onclick="event.stopPropagation(); window.open('${mapsLink}', '_blank')">
+                                📍 Maps
+                            </button>
+                            <button class="action-btn details-btn" onclick="event.stopPropagation(); showPlaceDetails(${index}, '${category}')">
+                                ℹ️ Details
+                            </button>
                         </div>
                     </div>
                 `;
             });
 
-            recsHtml += `</div>`;
+            recsHtml += `</div></div>`;
             messageDiv.innerHTML = recsHtml;
             messagesContainer.appendChild(messageDiv);
             scrollToBottom();
+
+            // Store recommendations for detail view
+            window.currentRecommendations = recommendations;
 
             // Add explore more options after showing recommendations
             setTimeout(() => {
@@ -1336,7 +1658,102 @@
             }, 1000);
         }
 
-        // Show services in chat
+        // Show detailed place information
+        function showPlaceDetails(index, category) {
+            if (!window.currentRecommendations || !window.currentRecommendations[index]) {
+                return;
+            }
+
+            const place = window.currentRecommendations[index];
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+
+            const mapsLink = place.maps_link || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ' ' + (place.address || ''))}`;
+
+            let detailsHtml = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="place-details-modal">
+                        <div class="modal-header">
+                            <h2>${place.name}</h2>
+                            <div class="rating-large">${place.rating}⭐</div>
+                        </div>
+
+
+
+                        <div class="modal-section">
+                            <h3>Quick Info</h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">📍 Distance:</span>
+                                    <span class="info-value">${place.distance}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">🏷️ Category:</span>
+                                    <span class="info-value">${place.type}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">💰 Pricing:</span>
+                                    <span class="info-value">${place.estimated_pricing || place.price}</span>
+                                </div>
+                                ${place.visit_duration ? `
+                                <div class="info-item">
+                                    <span class="info-label">⏱️ Duration:</span>
+                                    <span class="info-value">${place.visit_duration}</span>
+                                </div>
+                                ` : ''}
+                                ${place.best_time ? `
+                                <div class="info-item">
+                                    <span class="info-label">🕐 Best Time:</span>
+                                    <span class="info-value">${place.best_time}</span>
+                                </div>
+                                ` : ''}
+                                ${place.phone ? `
+                                <div class="info-item">
+                                    <span class="info-label">📞 Phone:</span>
+                                    <span class="info-value">${place.phone}</span>
+                                </div>
+                                ` : ''}
+                                ${place.website ? `
+                                <div class="info-item">
+                                    <span class="info-label">🌐 Website:</span>
+                                    <span class="info-value"><a href="${place.website}" target="_blank">Visit Website</a></span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        ${place.address ? `
+                        <div class="modal-section">
+                            <h3>Address</h3>
+                            <p class="address-text">${place.address}</p>
+                        </div>
+                        ` : ''}
+
+                        <div class="modal-actions">
+                            <button class="action-btn primary" onclick="window.open('${mapsLink}', '_blank')">
+                                📍 Open in Maps
+                            </button>
+                            ${place.phone ? `
+                            <button class="action-btn secondary" onclick="window.open('tel:${place.phone}', '_self')">
+                                📞 Call Now
+                            </button>
+                            ` : ''}
+                            <button class="action-btn secondary" onclick="showMainOptions()">
+                                🔙 Back to Menu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            messageDiv.innerHTML = detailsHtml;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Show services in chat using the same interactive cards as recommendations
         function showServices(services, category) {
             const messagesContainer = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
@@ -1346,27 +1763,64 @@
                 <div class="message-avatar">🤖</div>
                 <div class="message-content">
                     Here are nearby ${category}:
+                    <div class="recommendations-grid">
             `;
 
-            services.forEach(service => {
+            services.forEach((service, index) => {
+                const mapsLink = service.maps_link || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(service.name + ' ' + (service.address || ''))}`;
+
                 servicesHtml += `
-                    <div class="service-card">
-                        <div class="service-name">${service.name}</div>
-                        <div class="service-details">
-                            <span>${service.type}</span>
-                            <span>${service.rating} • ${service.distance}</span>
+                    <div class="interactive-recommendation-card" onclick="showServiceDetails(${index}, '${category}')">
+                        <div class="card-header">
+                            <h3 class="place-name">${service.name}</h3>
+                            <div class="rating-badge">${service.rating}</div>
                         </div>
-                        <div class="service-details">
-                            <span class="price-tag">${service.price}</span>
+
+                        <div class="card-content">
+                            <div class="place-details-grid">
+                                <div class="detail-item">
+                                    <span class="detail-icon">📍</span>
+                                    <span class="detail-text">${service.distance}</span>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span class="detail-icon">🏷️</span>
+                                    <span class="detail-text">${service.type || service.category}</span>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span class="detail-icon">💰</span>
+                                    <span class="detail-text">${service.estimated_pricing || service.price}</span>
+                                </div>
+
+                                ${service.visit_duration ? `
+                                <div class="detail-item">
+                                    <span class="detail-icon">⏱️</span>
+                                    <span class="detail-text">${service.visit_duration}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div class="card-actions">
+                            <button class="action-btn maps-btn" onclick="event.stopPropagation(); window.open('${mapsLink}', '_blank')">
+                                📍 Maps
+                            </button>
+                            <button class="action-btn details-btn" onclick="event.stopPropagation(); showServiceDetails(${index}, '${category}')">
+                                ℹ️ Details
+                            </button>
                         </div>
                     </div>
                 `;
             });
 
-            servicesHtml += `</div>`;
+            servicesHtml += `</div></div>`;
             messageDiv.innerHTML = servicesHtml;
             messagesContainer.appendChild(messageDiv);
             scrollToBottom();
+
+            // Store services for detail view
+            window.currentServices = services;
 
             // Add explore more options after showing services
             setTimeout(() => {
@@ -1374,7 +1828,107 @@
             }, 1000);
         }
 
+        // Show detailed service information (for ATMs, pharmacy, rentals)
+        function showServiceDetails(index, category) {
+            if (!window.currentServices || !window.currentServices[index]) {
+                return;
+            }
 
+            const service = window.currentServices[index];
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+
+            const mapsLink = service.maps_link || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(service.name + ' ' + (service.address || ''))}`;
+
+            let detailsHtml = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="place-details-modal">
+                        <div class="modal-header">
+                            <h2>${service.name}</h2>
+                            <div class="rating-large">${service.rating}⭐</div>
+                        </div>
+
+                        <div class="modal-section">
+                            <h3>Service Information</h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">📍 Distance:</span>
+                                    <span class="info-value">${service.distance}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">🏷️ Category:</span>
+                                    <span class="info-value">${service.type || service.category}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">💰 Pricing:</span>
+                                    <span class="info-value">${service.estimated_pricing || service.price}</span>
+                                </div>
+                                ${service.visit_duration ? `
+                                <div class="info-item">
+                                    <span class="info-label">⏱️ Duration:</span>
+                                    <span class="info-value">${service.visit_duration}</span>
+                                </div>
+                                ` : ''}
+                                ${service.best_time ? `
+                                <div class="info-item">
+                                    <span class="info-label">🕐 Best Time:</span>
+                                    <span class="info-value">${service.best_time}</span>
+                                </div>
+                                ` : ''}
+                                ${service.phone ? `
+                                <div class="info-item">
+                                    <span class="info-label">📞 Phone:</span>
+                                    <span class="info-value">${service.phone}</span>
+                                </div>
+                                ` : ''}
+                                ${service.website ? `
+                                <div class="info-item">
+                                    <span class="info-label">🌐 Website:</span>
+                                    <span class="info-value"><a href="${service.website}" target="_blank">Visit Website</a></span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        ${service.address ? `
+                        <div class="modal-section">
+                            <h3>Address</h3>
+                            <p class="address-text">${service.address}</p>
+                        </div>
+                        ` : ''}
+
+                        ${service.opening_hours && service.opening_hours.length > 0 ? `
+                        <div class="modal-section">
+                            <h3>Opening Hours</h3>
+                            <div class="opening-hours">
+                                ${service.opening_hours.map(hour => `<div class="hour-item">${hour}</div>`).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <div class="modal-actions">
+                            <button class="action-btn primary" onclick="window.open('${mapsLink}', '_blank')">
+                                📍 Open in Maps
+                            </button>
+                            ${service.phone ? `
+                            <button class="action-btn secondary" onclick="window.open('tel:${service.phone}', '_self')">
+                                📞 Call Now
+                            </button>
+                            ` : ''}
+                            <button class="action-btn secondary" onclick="showMainOptions()">
+                                🔙 Back to Menu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            messageDiv.innerHTML = detailsHtml;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
 
         // Show travel packages
         function showPackages(packages) {

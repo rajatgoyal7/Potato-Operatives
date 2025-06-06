@@ -5,7 +5,6 @@ from geopy.distance import geodesic
 from config.config import Config
 from config.database import get_redis_client
 from chatbot.models import Recommendation, db
-
 import json
 
 logger = logging.getLogger(__name__)
@@ -90,6 +89,8 @@ class RecommendationEngine:
                     'address': place.get('vicinity'),
                     'place_id': place.get('place_id'),
                     'category': 'Restaurant',
+                    'latitude': place['geometry']['location']['lat'],
+                    'longitude': place['geometry']['location']['lng'],
                     'distance': self._calculate_distance(
                         latitude, longitude,
                         place['geometry']['location']['lat'],
@@ -101,6 +102,9 @@ class RecommendationEngine:
                 details = self._get_place_details_google(place.get('place_id'))
                 if details:
                     restaurant.update(details)
+
+                # Enhance with additional details and maps link
+                restaurant = self._enhance_place_with_details(restaurant, 'restaurants')
 
                 restaurants.append(restaurant)
 
@@ -143,6 +147,8 @@ class RecommendationEngine:
                         'address': place.get('vicinity'),
                         'place_id': place.get('place_id'),
                         'category': place_type.replace('_', ' ').title(),
+                        'latitude': place['geometry']['location']['lat'],
+                        'longitude': place['geometry']['location']['lng'],
                         'distance': self._calculate_distance(
                             latitude, longitude,
                             place['geometry']['location']['lat'],
@@ -154,6 +160,9 @@ class RecommendationEngine:
                     details = self._get_place_details_google(place.get('place_id'))
                     if details:
                         attraction.update(details)
+
+                    # Enhance with additional details and maps link
+                    attraction = self._enhance_place_with_details(attraction, 'sightseeing')
 
                     attractions.append(attraction)
 
@@ -200,6 +209,8 @@ class RecommendationEngine:
                         'address': place.get('vicinity'),
                         'place_id': place.get('place_id'),
                         'category': place_type.replace('_', ' ').title(),
+                        'latitude': place['geometry']['location']['lat'],
+                        'longitude': place['geometry']['location']['lng'],
                         'distance': self._calculate_distance(
                             latitude, longitude,
                             place['geometry']['location']['lat'],
@@ -210,6 +221,9 @@ class RecommendationEngine:
                     details = self._get_place_details_google(place.get('place_id'))
                     if details:
                         shop.update(details)
+
+                    # Enhance with additional details and maps link
+                    shop = self._enhance_place_with_details(shop, 'shopping')
 
                     shopping_places.append(shop)
 
@@ -253,6 +267,8 @@ class RecommendationEngine:
                         'address': place.get('vicinity'),
                         'place_id': place.get('place_id'),
                         'category': place_type.replace('_', ' ').title(),
+                        'latitude': place['geometry']['location']['lat'],
+                        'longitude': place['geometry']['location']['lng'],
                         'distance': self._calculate_distance(
                             latitude, longitude,
                             place['geometry']['location']['lat'],
@@ -263,6 +279,9 @@ class RecommendationEngine:
                     details = self._get_place_details_google(place.get('place_id'))
                     if details:
                         nightlife.update(details)
+
+                    # Enhance with additional details and maps link
+                    nightlife = self._enhance_place_with_details(nightlife, 'nightlife')
 
                     nightlife_places.append(nightlife)
 
@@ -299,6 +318,8 @@ class RecommendationEngine:
                     'address': place.get('vicinity'),
                     'place_id': place.get('place_id'),
                     'category': 'ATM',
+                    'latitude': place['geometry']['location']['lat'],
+                    'longitude': place['geometry']['location']['lng'],
                     'distance': self._calculate_distance(
                         latitude, longitude,
                         place['geometry']['location']['lat'],
@@ -309,6 +330,9 @@ class RecommendationEngine:
                 details = self._get_place_details_google(place.get('place_id'))
                 if details:
                     atm.update(details)
+
+                # Enhance with additional details and maps link
+                atm = self._enhance_place_with_details(atm, 'atms')
 
                 atms.append(atm)
 
@@ -344,6 +368,8 @@ class RecommendationEngine:
                     'address': place.get('vicinity'),
                     'place_id': place.get('place_id'),
                     'category': 'Pharmacy',
+                    'latitude': place['geometry']['location']['lat'],
+                    'longitude': place['geometry']['location']['lng'],
                     'distance': self._calculate_distance(
                         latitude, longitude,
                         place['geometry']['location']['lat'],
@@ -354,6 +380,9 @@ class RecommendationEngine:
                 details = self._get_place_details_google(place.get('place_id'))
                 if details:
                     pharmacy.update(details)
+
+                # Enhance with additional details and maps link
+                pharmacy = self._enhance_place_with_details(pharmacy, 'pharmacy')
 
                 pharmacies.append(pharmacy)
 
@@ -392,6 +421,8 @@ class RecommendationEngine:
                         'address': place.get('vicinity'),
                         'place_id': place.get('place_id'),
                         'category': 'Rental Service',
+                        'latitude': place['geometry']['location']['lat'],
+                        'longitude': place['geometry']['location']['lng'],
                         'distance': self._calculate_distance(
                             latitude, longitude,
                             place['geometry']['location']['lat'],
@@ -402,6 +433,9 @@ class RecommendationEngine:
                     details = self._get_place_details_google(place.get('place_id'))
                     if details:
                         rental.update(details)
+
+                    # Enhance with additional details and maps link
+                    rental = self._enhance_place_with_details(rental, 'rentals')
 
                     rentals.append(rental)
 
@@ -527,3 +561,87 @@ class RecommendationEngine:
             
         except Exception as e:
             logger.error(f"Error caching recommendations: {e}")
+
+    def _enhance_place_with_details(self, place, category):
+        """Enhance place details with additional info and maps link"""
+        try:
+            # Add estimated pricing based on category and rating
+            place['estimated_pricing'] = self._estimate_pricing(category, place.get('rating', 0))
+
+            # Add visit duration estimate
+            place['visit_duration'] = self._estimate_visit_duration(category)
+
+            # Add best time to visit
+            place['best_time'] = self._get_best_time_to_visit(category)
+
+            # Add Google Maps link if coordinates are available
+            if place.get('latitude') and place.get('longitude'):
+                place['maps_link'] = f"https://www.google.com/maps/search/?api=1&query={place['latitude']},{place['longitude']}"
+
+            return place
+
+        except Exception as e:
+            logger.error(f"Error enhancing place with details: {e}")
+            return place
+
+    def _estimate_pricing(self, category, rating):
+        """Estimate pricing based on category and rating"""
+        pricing_map = {
+            'restaurants': {
+                'base': '₹₹',
+                'high_rating': '₹₹₹' if rating >= 4.0 else '₹₹'
+            },
+            'sightseeing': {
+                'base': '₹50-200',
+                'high_rating': '₹100-500' if rating >= 4.0 else '₹50-200'
+            },
+            'shopping': {
+                'base': 'Varies',
+                'high_rating': 'Premium' if rating >= 4.0 else 'Varies'
+            },
+            'nightlife': {
+                'base': '₹₹₹',
+                'high_rating': '₹₹₹₹' if rating >= 4.0 else '₹₹₹'
+            },
+            'atms': {
+                'base': 'Free',
+                'high_rating': 'Free'
+            },
+            'pharmacy': {
+                'base': 'Medicines',
+                'high_rating': 'Medicines'
+            },
+            'rentals': {
+                'base': '₹500-2000/day',
+                'high_rating': '₹1000-3000/day' if rating >= 4.0 else '₹500-2000/day'
+            }
+        }
+
+        category_pricing = pricing_map.get(category, {'base': 'Varies', 'high_rating': 'Varies'})
+        return category_pricing['high_rating'] if rating >= 4.0 else category_pricing['base']
+
+    def _estimate_visit_duration(self, category):
+        """Estimate visit duration based on category"""
+        duration_map = {
+            'restaurants': '1-2 hours',
+            'sightseeing': '2-4 hours',
+            'shopping': '1-3 hours',
+            'nightlife': '2-5 hours',
+            'atms': '5 minutes',
+            'pharmacy': '10-15 minutes',
+            'rentals': '30 minutes'
+        }
+        return duration_map.get(category, '1-2 hours')
+
+    def _get_best_time_to_visit(self, category):
+        """Get best time to visit based on category"""
+        time_map = {
+            'restaurants': 'Lunch: 12-2 PM, Dinner: 7-10 PM',
+            'sightseeing': 'Morning: 9 AM-12 PM, Evening: 4-7 PM',
+            'shopping': 'Afternoon: 2-8 PM',
+            'nightlife': 'Evening: 8 PM-2 AM',
+            'atms': '24/7 Available',
+            'pharmacy': 'Daytime: 9 AM-9 PM',
+            'rentals': 'Morning: 9 AM-6 PM'
+        }
+        return time_map.get(category, 'Anytime')
