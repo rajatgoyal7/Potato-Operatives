@@ -2,12 +2,14 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from config.config import config
-from config.database import init_db
+from config.database import init_db, db
 from chatbot.event_handler import EventHandler
 from chatbot.chatbot_service import ChatbotService
-from chatbot.models import Booking, ChatSession
+from chatbot.user_service import UserService
+from chatbot.booking_search_service import BookingSearchService
+from chatbot.models import Booking, ChatSession, ChatMessage, User
 
 # Configure logging
 logging.basicConfig(
@@ -33,10 +35,12 @@ def create_app(config_name=None):
     # Initialize services
     event_handler = EventHandler()
     chatbot_service = ChatbotService()
+    user_service = UserService()
+    booking_search_service = BookingSearchService()
 
     @app.route('/')
     def index():
-        """Serve the demo interface"""
+        """Serve the TravelMate chatbot interface"""
         return send_from_directory('static', 'index.html')
 
     @app.route('/health', methods=['GET'])
@@ -202,6 +206,119 @@ def create_app(config_name=None):
             logger.error(f"Error getting booking sessions: {e}")
             return jsonify({'error': 'Internal server error'}), 500
 
+    @app.route('/user/login', methods=['POST'])
+    def user_login():
+        """User login/registration endpoint"""
+        try:
+            data = request.get_json()
+            phone_number = data.get('phone_number')
+            name = data.get('name')
+            email = data.get('email')
+
+            if not phone_number:
+                return jsonify({'error': 'phone_number is required'}), 400
+
+            result = user_service.create_or_get_user(phone_number, name, email)
+
+            if result['status'] == 'success':
+                return jsonify(result), 200
+            else:
+                return jsonify(result), 400
+
+        except Exception as e:
+            logger.error(f"Error in user login: {e}")
+            return jsonify({'error': 'Internal server error'}), 500
+
+    @app.route('/user/validate', methods=['POST'])
+    def validate_user_session():
+        """Validate user session token"""
+        try:
+            data = request.get_json()
+            session_token = data.get('session_token')
+
+            if not session_token:
+                return jsonify({'error': 'session_token is required'}), 400
+
+            result = user_service.validate_session(session_token)
+
+            if result['status'] == 'valid':
+                return jsonify(result), 200
+            else:
+                return jsonify(result), 401
+
+        except Exception as e:
+            logger.error(f"Error validating session: {e}")
+            return jsonify({'error': 'Internal server error'}), 500
+
+    @app.route('/user/logout', methods=['POST'])
+    def user_logout():
+        """User logout endpoint"""
+        try:
+            data = request.get_json()
+            session_token = data.get('session_token')
+
+            if not session_token:
+                return jsonify({'error': 'session_token is required'}), 400
+
+            result = user_service.logout_user(session_token)
+
+            return jsonify(result), 200
+
+        except Exception as e:
+            logger.error(f"Error in user logout: {e}")
+            return jsonify({'error': 'Internal server error'}), 500
+
+    @app.route('/bookings/search', methods=['POST'])
+    def search_user_bookings():
+        """Search bookings for logged-in user using external API"""
+        try:
+            data = request.get_json()
+            session_token = data.get('session_token')
+            from_date = data.get('from_date')  # Optional, defaults to current date
+
+            if not session_token:
+                return jsonify({'error': 'session_token is required'}), 400
+
+            # Validate user session
+            user_validation = user_service.validate_session(session_token)
+            if user_validation['status'] != 'valid':
+                return jsonify({'error': 'Invalid session token'}), 401
+
+            phone_number = user_validation['phone_number']
+
+            # Search bookings using external API
+            api_result = booking_search_service.search_bookings_by_phone(phone_number, from_date)
+
+            if api_result['status'] != 'success':
+                return jsonify(api_result), 400
+
+            # Process the API response to extract booking data
+            bookings_data = booking_search_service.process_booking_response(api_result)
+
+            if not bookings_data:
+                return jsonify({
+                    'status': 'success',
+                    'message': 'No bookings found',
+                    'bookings': [],
+                    'sessions': []
+                }), 200
+
+            # Process bookings and create chat sessions
+            processing_result = event_handler.process_api_booking_data(bookings_data)
+
+            return jsonify({
+                'status': 'success',
+                'message': f'Found and processed {len(processing_result["processed_bookings"])} bookings',
+                'api_result': api_result,
+                'bookings': processing_result['processed_bookings'],
+                'sessions': processing_result['created_sessions'],
+                'errors': processing_result['errors']
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error searching user bookings: {e}")
+            return jsonify({'error': 'Internal server error'}), 500
+
     @app.route('/admin/stats', methods=['GET'])
     def get_stats():
         """Get system statistics"""
@@ -308,61 +425,6 @@ def create_app(config_name=None):
             logger.error(f"Error clearing sessions: {str(e)}")
             db.session.rollback()
             return jsonify({'error': 'Failed to clear sessions'}), 500
-
-    @app.route('/simulate/booking-event', methods=['POST'])
-    def simulate_booking_event():
-        """Endpoint to simulate external booking events for testing"""
-        try:
-            event_type = request.json.get('type', 'sample1')
-
-            if event_type == 'sample1':
-                event_data = {
-                    "message_id": f"EVT-{datetime.now().strftime('%d%m%y-%H%M')}-9199-5649",
-                    "generated_at": datetime.now().isoformat(),
-                    "events": [
-                        {
-                            "entity_name": "booking",
-                            "payload": {
-                                "booking_id": f"TEST-{datetime.now().strftime('%Y%m%d%H%M%S')}",
-                                "reference_number": f"TRB-{datetime.now().strftime('%Y%m%d%H%M%S')}",
-                                "hotel_id": "0016581",
-                                "status": "reserved",
-                                "checkin_date": "2025-06-05T14:00:00+05:30",
-                                "checkout_date": "2025-06-06T12:00:00+05:30",
-                                "source": {
-                                    "channel_code": "direct",
-                                    "application_code": "website",
-                                    "subchannel_code": "website-direct"
-                                },
-                                "customers": [
-                                    {
-                                        "customer_id": "1",
-                                        "first_name": "Test",
-                                        "last_name": "User",
-                                        "email": "test.user@example.com",
-                                        "phone": {
-                                            "number": "8904348449",
-                                            "country_code": "+91"
-                                        },
-                                        "is_primary": False,
-                                        "dummy": False
-                                    }
-                                ]
-                            }
-                        }
-                    ],
-                    "event_type": "booking.created"
-                }
-            else:
-                return jsonify({'error': 'Invalid event type'}), 400
-
-            # Process the event
-            result = event_handler.process_booking_event(event_data)
-            return jsonify(result), 200
-
-        except Exception as e:
-            logger.error(f"Error simulating booking event: {e}")
-            return jsonify({'error': 'Internal server error'}), 500
 
     @app.errorhandler(404)
     def not_found(error):

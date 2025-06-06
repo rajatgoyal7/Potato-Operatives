@@ -58,19 +58,34 @@ Edit `.env` file with your API keys:
 
 ```bash
 # MapMyIndia API (Primary - Free)
-MAPMYINDIA_API_KEY=your-mapmyindia-api-key
-MAPMYINDIA_CLIENT_ID=your-mapmyindia-client-id
-MAPMYINDIA_CLIENT_SECRET=your-mapmyindia-client-secret
+MAPMYINDIA_API_KEY=your_mapmyindia_api_key_here
+MAPMYINDIA_CLIENT_ID=your_mapmyindia_client_id_here
+MAPMYINDIA_CLIENT_SECRET=your_mapmyindia_client_secret_here
 
 # Google Places API (Fallback - Optional)
-GOOGLE_PLACES_API_KEY=your-google-places-api-key
+GOOGLE_PLACES_API_KEY=your_google_places_api_key_here
 
-# OpenAI API
-OPENAI_API_KEY=your-openai-api-key
+# OpenAI API (Optional)
+OPENAI_API_KEY=your_openai_api_key_here
 
 # Webhook Security
-WEBHOOK_SECRET=your-webhook-secret
+WEBHOOK_SECRET=your_webhook_secret_here
+
+# Database Configuration
+DATABASE_URL=sqlite:///treebo_chatbot.db
+
+# Redis Configuration
+REDIS_URL=redis://localhost:6379/0
+
+# External Booking Search API
+BOOKING_SEARCH_API_URL=https://growth.treebo.be/growth-realization/custom_message/search_booking_by_phone/
+BOOKING_SEARCH_API_AUTH=your_booking_api_auth_token_here
 ```
+
+**⚠️ Security Note:**
+- Never commit your `.env` file to version control
+- The `.env.example` file contains placeholder values only
+- Replace all placeholder values with your actual API keys
 
 **Getting MapMyIndia API Keys (Free):**
 1. Visit [MapMyIndia Developer Portal](https://www.mapmyindia.com/api/)
@@ -354,6 +369,13 @@ treebo-chatbot/
 
 ## Security
 
+### Environment Variables Security
+- **`.env` file**: Contains real API keys and secrets, never committed to git
+- **`.env.example` file**: Template with placeholder values, safe to commit
+- **`.gitignore`**: Ensures `.env` file is never accidentally committed
+- **Setup process**: Copy `.env.example` to `.env` and replace placeholders
+
+### Application Security
 - Webhook signature verification using HMAC-SHA256
 - Input validation on all endpoints
 - SQL injection protection via SQLAlchemy ORM

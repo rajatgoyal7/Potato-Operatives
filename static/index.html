@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Treebo Chatbot Demo</title>
+    <title>TravelMate - Your Treebo Travel Companion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,983 +13,1405 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f8fffe 0%, #e8f5e8 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            padding: 30px;
-        }
-
-        .booking-section, .chat-section {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
-            border: 1px solid #e9ecef;
-        }
-
-        .section-title {
-            font-size: 1.5em;
-            margin-bottom: 20px;
-            color: #333;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #555;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
-        }
-
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: transform 0.2s;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
         .chat-container {
-            height: 400px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            overflow-y: auto;
-            padding: 15px;
+            width: 100%;
+            max-width: 450px;
+            height: 700px;
             background: white;
-            margin-bottom: 15px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(76, 175, 80, 0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(76, 175, 80, 0.1);
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .chat-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .treebo-logo {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+        }
+
+        .treebo-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .header-buttons {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .back-button, .clear-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button {
+            display: none;
+        }
+
+        .back-button:hover, .clear-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #fafafa;
         }
 
         .message {
-            margin-bottom: 15px;
-            padding: 10px 15px;
-            border-radius: 10px;
-            max-width: 80%;
-        }
-
-        .message.user {
-            background: #667eea;
-            color: white;
-            margin-left: auto;
-            text-align: right;
-        }
-
-        .message.bot {
-            background: #e9ecef;
-            color: #333;
-        }
-
-        .message-input {
+            margin-bottom: 16px;
             display: flex;
+            align-items: flex-start;
             gap: 10px;
         }
 
-        .message-input input {
-            flex: 1;
+        .message.user {
+            flex-direction: row-reverse;
         }
 
-        .status {
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-weight: 600;
+        .message-content {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.4;
         }
 
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .status.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
-        .recommendations {
-            margin-top: 15px;
-        }
-
-        .recommendation-item {
+        .message.bot .message-content {
             background: white;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 10px;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 6px;
         }
 
-        .recommendation-item h4 {
-            color: #667eea;
-            margin-bottom: 5px;
+        .message.user .message-content {
+            background: #4CAF50;
+            color: white;
+            border-bottom-right-radius: 6px;
         }
 
-        .recommendation-item .rating {
-            color: #ffc107;
-            margin-bottom: 5px;
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            flex-shrink: 0;
         }
 
-        .recommendation-item .distance {
-            color: #6c757d;
-            font-size: 0.9em;
+        .message.bot .message-avatar {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .message.user .message-avatar {
+            background: #e8f5e8;
+            color: #4CAF50;
         }
 
         .typing-indicator {
             display: none;
-            padding: 10px 15px;
-            background: #e9ecef;
-            border-radius: 10px;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 18px;
+            border-bottom-left-radius: 6px;
             max-width: 80%;
-            margin-bottom: 15px;
         }
 
-        .typing-indicator span {
-            display: inline-block;
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
             width: 8px;
             height: 8px;
-            border-radius: 50%;
             background: #999;
-            margin: 0 2px;
+            border-radius: 50%;
             animation: typing 1.4s infinite ease-in-out;
         }
 
-        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        .typing-dot:nth-child(3) { animation-delay: 0s; }
 
         @keyframes typing {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
         }
 
-        .language-selector {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 5px;
-            padding: 5px;
-        }
-
-        .language-selector select {
-            background: transparent;
-            border: none;
-            color: white;
-            font-weight: bold;
-        }
-
-        .stats-panel {
-            background: #f8f9fa;
+        .chat-input-container {
             padding: 20px;
-            margin: 20px;
-            border-radius: 10px;
-            border: 1px solid #e9ecef;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .stat-item {
             background: white;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid #ddd;
+            border-top: 1px solid #e0e0e0;
         }
 
-        .stat-value {
-            font-size: 2em;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .stat-label {
-            color: #666;
-            margin-top: 5px;
-        }
-
-        .quick-actions {
+        .chat-input {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .quick-actions button {
-            padding: 8px 15px;
-            font-size: 12px;
-            border-radius: 20px;
-        }
-
-        .message-timestamp {
-            font-size: 0.8em;
-            color: #999;
-            margin-top: 5px;
-        }
-
-        .recommendation-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-
-        .map-container {
-            height: 200px;
-            background: #f0f0f0;
-            border-radius: 5px;
-            margin-top: 10px;
-            display: flex;
+            gap: 12px;
             align-items: center;
-            justify-content: center;
-            color: #666;
         }
 
-        .section-description {
-            color: #666;
-            margin-bottom: 20px;
-            font-style: italic;
+        .chat-input input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.3s ease;
         }
 
-        .event-simulation {
-            margin-top: 20px;
+        .chat-input input:focus {
+            border-color: #4CAF50;
         }
 
-        .simulation-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .sim-button {
-            padding: 20px;
-            text-align: center;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
+        .send-button {
+            width: 44px;
+            height: 44px;
+            background: #4CAF50;
             border: none;
+            border-radius: 50%;
+            color: white;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            min-height: 80px;
             display: flex;
-            flex-direction: column;
+            align-items: center;
             justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .send-button:hover {
+            background: #45a049;
+        }
+
+        .send-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .option-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .option-button {
+            padding: 8px 16px;
+            background: #e8f5e8;
+            color: #4CAF50;
+            border: 1px solid #4CAF50;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option-button:hover {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .booking-card {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 8px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .booking-card:hover {
+            background: #e8f5e8;
+            border-color: #4CAF50;
+        }
+
+        .booking-card.selected {
+            background: #e8f5e8;
+            border-color: #4CAF50;
+            border-width: 2px;
+        }
+
+        .booking-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+            font-size: 1rem;
+        }
+
+        .booking-details {
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.3;
+        }
+
+        .recommendation-card, .service-card, .itinerary-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 6px 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .recommendation-card:hover, .service-card:hover, .itinerary-card:hover {
+            border-color: #4CAF50;
+            transform: translateY(-1px);
+        }
+
+        .rec-name, .service-name, .itinerary-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .rec-details, .service-details, .itinerary-details {
+            font-size: 0.8rem;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
         }
 
-        .sim-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+        .rec-rating {
+            color: #ff9800;
         }
 
-        .sim-button small {
-            font-size: 12px;
-            opacity: 0.9;
-            margin-top: 5px;
+        .price-tag {
+            background: #4CAF50;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
         }
 
-        #custom-event-section {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #e9ecef;
-            margin-top: 15px;
+        .itinerary-day {
+            background: #f0f8f0;
+            border-left: 3px solid #4CAF50;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 0 8px 8px 0;
         }
 
-        #custom-event-json {
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            resize: vertical;
+        .day-title {
+            font-weight: 600;
+            color: #4CAF50;
+            margin-bottom: 6px;
         }
 
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
+        .day-activities {
+            font-size: 0.85rem;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .welcome-animation {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 480px) {
+            .chat-container {
+                height: 100vh;
+                border-radius: 0;
+                max-width: 100%;
             }
 
-            .header h1 {
-                font-size: 2em;
-            }
-
-            .language-selector {
-                position: static;
-                margin-top: 10px;
-            }
-
-            .quick-actions {
-                justify-content: center;
-            }
-
-            .simulation-buttons {
-                grid-template-columns: 1fr;
+            body {
+                padding: 0;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="language-selector">
-                <select id="ui-language" onchange="changeUILanguage()">
-                    <option value="en">🇺🇸 English</option>
-                    <option value="hi">🇮🇳 हिंदी</option>
-                    <option value="es">🇪🇸 Español</option>
-                    <option value="fr">🇫🇷 Français</option>
-                    <option value="de">🇩🇪 Deutsch</option>
-                    <option value="ja">🇯🇵 日本語</option>
-                </select>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="treebo-logo">
+                <img src="https://images.treebohotels.com/images/hotrod/treebo-club-logo-black.svg" alt="Treebo" onerror="this.style.display='none'; this.parentNode.innerHTML='🏨';">
             </div>
-            <h1>🏨 Treebo Chatbot Demo</h1>
-            <p>Location-specific recommendations for hotel guests</p>
+            <div class="header-buttons">
+                <button class="back-button" id="backButton" onclick="goBack()">← Back</button>
+                <button class="clear-button" id="clearButton" onclick="clearChat()">🗑️ Clear</button>
+            </div>
+            <h1>TravelMate</h1>
+            <p>Your Treebo Travel Companion</p>
         </div>
 
-        <div class="stats-panel">
-            <h3>System Status</h3>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-value" id="active-sessions">0</div>
-                    <div class="stat-label">Active Sessions</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="total-messages">0</div>
-                    <div class="stat-label">Messages Sent</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="recommendations-given">0</div>
-                    <div class="stat-label">Recommendations</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="system-status">🟢</div>
-                    <div class="stat-label">System Status</div>
-                </div>
-            </div>
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will be added here dynamically -->
         </div>
 
-        <div class="main-content">
-            <div class="booking-section">
-                <h2 class="section-title">Booking Event Simulation</h2>
-                <p class="section-description">
-                    Bookings are now created by external services. Use the buttons below to simulate booking events for testing.
-                </p>
-
-                <div id="booking-status"></div>
-
-                <div class="event-simulation">
-                    <h3>Simulate Booking Events</h3>
-
-                    <div class="simulation-buttons">
-                        <button type="button" onclick="simulateBookingEvent('sample1')" class="sim-button">
-                            📅 Sample Booking 1<br>
-                            <small>Treebo Club Worldtree - Bangalore</small>
-                        </button>
-
-                        <button type="button" onclick="simulateBookingEvent('sample2')" class="sim-button">
-                            📅 Sample Booking 2<br>
-                            <small>Treebo Trend Hotel - Delhi</small>
-                        </button>
-
-                        <button type="button" onclick="simulateBookingEvent('custom')" class="sim-button">
-                            🔧 Custom Event<br>
-                            <small>Use provided JSON structure</small>
-                        </button>
-                    </div>
-
-                    <div id="custom-event-section" style="display: none;">
-                        <h4>Custom Event JSON</h4>
-                        <textarea id="custom-event-json" rows="10" cols="80" placeholder="Paste your booking event JSON here..."></textarea>
-                        <br>
-                        <button type="button" onclick="sendCustomEvent()">Send Custom Event</button>
-                        <button type="button" onclick="hideCustomEvent()">Cancel</button>
-                    </div>
-                </div>
-
-                <div class="recommendations" id="recommendations-section" style="display: none;">
-                    <h3>Quick Recommendations</h3>
-                    <button type="button" onclick="getRecommendations('restaurants')">🍽️ Restaurants</button>
-                    <button type="button" onclick="getRecommendations('sightseeing')">🏛️ Sightseeing</button>
-                    <button type="button" onclick="getRecommendations('events')">🎭 Events</button>
-                    <button type="button" onclick="getRecommendations('shopping')">🛍️ Shopping</button>
-                    <button type="button" onclick="getRecommendations('nightlife')">🌃 Nightlife</button>
-                </div>
-            </div>
-
-            <div class="chat-section">
-                <h2 class="section-title">Chat Interface</h2>
-
-                <div id="chat-status"></div>
-
-                <div class="quick-actions" id="quick-actions" style="display: none;">
-                    <button onclick="sendQuickMessage('Hello!')">👋 Hello</button>
-                    <button onclick="sendQuickMessage('What restaurants are nearby?')">🍽️ Restaurants</button>
-                    <button onclick="sendQuickMessage('Show me tourist attractions')">🏛️ Attractions</button>
-                    <button onclick="sendQuickMessage('Any events happening today?')">🎭 Events</button>
-                    <button onclick="sendQuickMessage('Thank you!')">🙏 Thanks</button>
-                </div>
-
-                <div class="chat-container" id="chat-container">
-                    <div class="message bot">
-                        <strong>Welcome!</strong> Simulate a booking event to start chatting with the recommendation bot.
-                        <div class="message-timestamp" id="welcome-timestamp"></div>
-                    </div>
-                    <div class="typing-indicator" id="typing-indicator">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
-                </div>
-
-                <div class="message-input">
-                    <input type="text" id="message-input" placeholder="Create a booking first to start chatting..." disabled>
-                    <button type="button" id="send-button" onclick="sendMessage()" disabled>Send</button>
-                    <button type="button" id="voice-button" onclick="toggleVoiceInput()" disabled>🎤</button>
-                </div>
-
-                <div id="recommendations-display"></div>
+        <div class="chat-input-container">
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="Type your message..." disabled>
+                <button class="send-button" id="sendButton" onclick="sendMessage()" disabled>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:5000';
-        let currentSessionId = null;
-        let messageCount = 0;
-        let recommendationCount = 0;
-        let isVoiceInputActive = false;
-        let recognition = null;
+        let currentState = 'welcome';
+        let selectedLanguage = 'en';
+        let userPhone = '';
+        let sessionToken = '';
+        let availableBookings = [];
+        let selectedBooking = null;
+        let stateHistory = [];
 
-        // Initialize
-        document.getElementById('message-input').addEventListener('keypress', function(e) {
+        // Enhanced language translations with more languages
+        const translations = {
+            en: {
+                welcome: "Hello! Welcome to TravelMate, your Treebo travel companion. I'm here to help you with your bookings, provide personalized recommendations, and create amazing travel experiences.",
+                languagePrompt: "Please select your preferred language:",
+                phonePrompt: "Great! Now, please enter your phone number so I can find your bookings:",
+                searchingBookings: "Searching for your bookings...",
+                bookingsFound: "I found your active bookings! Please select which one you'd like assistance with:",
+                noBookings: "I couldn't find any active bookings for this phone number. Please check and try again.",
+                bookingSelected: "Perfect! I've selected your booking. How can I help you today?",
+                recommendationOptions: "What would you like to explore?",
+                restaurants: "🍽️ Restaurants",
+                sightseeing: "🏛️ Sightseeing",
+                events: "🎭 Events",
+                shopping: "🛍️ Shopping",
+                nightlife: "🌃 Nightlife",
+                atms: "🏧 ATMs",
+                hospitals: "🏥 Hospitals",
+                pharmacy: "💊 Pharmacy",
+                rentals: "🚗 Car/Bike Rentals",
+                taxi: "🚕 Taxi Services",
+                itinerary: "📅 Travel Itinerary",
+                packages: "🎁 Travel Packages"
+            },
+            hi: {
+                welcome: "नमस्ते! ट्रैवलमेट में आपका स्वागत है, आपका ट्रीबो यात्रा साथी। मैं आपकी बुकिंग में मदद करने, व्यक्तिगत सुझाव देने और अद्भुत यात्रा अनुभव बनाने के लिए यहाँ हूँ।",
+                languagePrompt: "कृपया अपनी पसंदीदा भाषा चुनें:",
+                phonePrompt: "बहुत बढ़िया! अब कृपया अपना फोन नंबर दर्ज करें ताकि मैं आपकी बुकिंग खोज सकूं:",
+                searchingBookings: "आपकी बुकिंग खोजी जा रही है...",
+                bookingsFound: "मुझे आपकी सक्रिय बुकिंग मिल गई! कृपया चुनें कि आप किसके लिए सहायता चाहते हैं:",
+                noBookings: "इस फोन नंबर के लिए कोई सक्रिय बुकिंग नहीं मिली। कृपया जांचें और फिर कोशिश करें।",
+                bookingSelected: "बेहतरीन! मैंने आपकी बुकिंग चुन ली है। आज मैं आपकी कैसे मदद कर सकता हूँ?",
+                recommendationOptions: "आप क्या खोजना चाहेंगे?",
+                restaurants: "🍽️ रेस्टोरेंट",
+                sightseeing: "🏛️ दर्शनीय स्थल",
+                events: "🎭 कार्यक्रम",
+                shopping: "🛍️ खरीदारी",
+                nightlife: "🌃 नाइटलाइफ",
+                atms: "🏧 एटीएम",
+                hospitals: "🏥 अस्पताल",
+                pharmacy: "💊 दवाखाना",
+                rentals: "🚗 कार/बाइक किराया",
+                taxi: "🚕 टैक्सी सेवा",
+                itinerary: "📅 यात्रा कार्यक्रम",
+                packages: "🎁 यात्रा पैकेज"
+            },
+            es: {
+                welcome: "¡Hola! Bienvenido a TravelMate, tu compañero de viaje de Treebo. Estoy aquí para ayudarte con tus reservas, brindarte recomendaciones personalizadas y crear experiencias de viaje increíbles.",
+                languagePrompt: "Por favor selecciona tu idioma preferido:",
+                phonePrompt: "¡Excelente! Ahora, por favor ingresa tu número de teléfono para encontrar tus reservas:",
+                searchingBookings: "Buscando tus reservas...",
+                bookingsFound: "¡Encontré tus reservas activas! Por favor selecciona con cuál te gustaría que te ayude:",
+                noBookings: "No pude encontrar reservas activas para este número de teléfono. Por favor verifica e intenta de nuevo.",
+                bookingSelected: "¡Perfecto! He seleccionado tu reserva. ¿Cómo puedo ayudarte hoy?",
+                recommendationOptions: "¿Qué te gustaría explorar?",
+                restaurants: "🍽️ Restaurantes",
+                sightseeing: "🏛️ Turismo",
+                events: "🎭 Eventos",
+                shopping: "🛍️ Compras",
+                nightlife: "🌃 Vida nocturna",
+                atms: "🏧 Cajeros",
+                hospitals: "🏥 Hospitales",
+                pharmacy: "💊 Farmacia",
+                rentals: "🚗 Alquiler de autos/motos",
+                taxi: "🚕 Servicios de taxi",
+                itinerary: "📅 Itinerario de viaje",
+                packages: "🎁 Paquetes de viaje"
+            },
+            fr: {
+                welcome: "Bonjour! Bienvenue sur TravelMate, votre compagnon de voyage Treebo. Je suis là pour vous aider avec vos réservations, fournir des recommandations personnalisées et créer des expériences de voyage incroyables.",
+                languagePrompt: "Veuillez sélectionner votre langue préférée:",
+                phonePrompt: "Parfait! Maintenant, veuillez entrer votre numéro de téléphone pour que je puisse trouver vos réservations:",
+                searchingBookings: "Recherche de vos réservations...",
+                bookingsFound: "J'ai trouvé vos réservations actives! Veuillez sélectionner celle pour laquelle vous souhaitez de l'aide:",
+                noBookings: "Je n'ai pas pu trouver de réservations actives pour ce numéro de téléphone. Veuillez vérifier et réessayer.",
+                bookingSelected: "Parfait! J'ai sélectionné votre réservation. Comment puis-je vous aider aujourd'hui?",
+                recommendationOptions: "Que souhaitez-vous explorer?",
+                restaurants: "🍽️ Restaurants",
+                sightseeing: "🏛️ Tourisme",
+                events: "🎭 Événements",
+                shopping: "🛍️ Shopping",
+                nightlife: "🌃 Vie nocturne",
+                atms: "🏧 Distributeurs",
+                hospitals: "🏥 Hôpitaux",
+                pharmacy: "💊 Pharmacie",
+                rentals: "🚗 Location auto/moto",
+                taxi: "🚕 Services de taxi",
+                itinerary: "📅 Itinéraire de voyage",
+                packages: "🎁 Forfaits voyage"
+            },
+            de: {
+                welcome: "Hallo! Willkommen bei TravelMate, Ihrem Treebo Reisebegleiter. Ich bin hier, um Ihnen bei Ihren Buchungen zu helfen, personalisierte Empfehlungen zu geben und erstaunliche Reiseerlebnisse zu schaffen.",
+                languagePrompt: "Bitte wählen Sie Ihre bevorzugte Sprache:",
+                phonePrompt: "Großartig! Bitte geben Sie jetzt Ihre Telefonnummer ein, damit ich Ihre Buchungen finden kann:",
+                searchingBookings: "Suche nach Ihren Buchungen...",
+                bookingsFound: "Ich habe Ihre aktiven Buchungen gefunden! Bitte wählen Sie aus, bei welcher Sie Hilfe benötigen:",
+                noBookings: "Ich konnte keine aktiven Buchungen für diese Telefonnummer finden. Bitte überprüfen Sie und versuchen Sie es erneut.",
+                bookingSelected: "Perfekt! Ich habe Ihre Buchung ausgewählt. Wie kann ich Ihnen heute helfen?",
+                recommendationOptions: "Was möchten Sie erkunden?",
+                restaurants: "🍽️ Restaurants",
+                sightseeing: "🏛️ Sightseeing",
+                events: "🎭 Veranstaltungen",
+                shopping: "🛍️ Einkaufen",
+                nightlife: "🌃 Nachtleben",
+                atms: "🏧 Geldautomaten",
+                hospitals: "🏥 Krankenhäuser",
+                pharmacy: "💊 Apotheke",
+                rentals: "🚗 Auto/Motorrad Vermietung",
+                taxi: "🚕 Taxi-Services",
+                itinerary: "📅 Reiseroute",
+                packages: "🎁 Reisepakete"
+            }
+        };
+
+        // Initialize chatbot
+        function initializeChatbot() {
+            setTimeout(() => {
+                addBotMessage(translations[selectedLanguage].welcome, true);
+                setTimeout(() => {
+                    showLanguageOptions();
+                }, 1000);
+            }, 500);
+        }
+
+        // State management
+        function pushState(state) {
+            stateHistory.push(currentState);
+            currentState = state;
+            updateBackButton();
+        }
+
+        function goBack() {
+            if (stateHistory.length > 0) {
+                currentState = stateHistory.pop();
+                updateBackButton();
+
+                // Handle different back scenarios
+                switch (currentState) {
+                    case 'language':
+                        showLanguageOptions();
+                        break;
+                    case 'phone':
+                        addBotMessage(translations[selectedLanguage].phonePrompt);
+                        enableInput();
+                        break;
+                    case 'booking_selection':
+                        if (availableBookings.length > 0) {
+                            showBookingOptions({ bookings: availableBookings.map(b => b.id) });
+                        }
+                        break;
+                    case 'chat':
+                        showMainOptions();
+                        break;
+                }
+            }
+        }
+
+        function updateBackButton() {
+            const backButton = document.getElementById('backButton');
+            if (stateHistory.length > 0 && currentState !== 'welcome') {
+                backButton.style.display = 'block';
+            } else {
+                backButton.style.display = 'none';
+            }
+        }
+
+        function clearChat() {
+            // Show confirmation dialog
+            if (confirm('Are you sure you want to clear the chat and start over?')) {
+                // Reset all state variables
+                currentState = 'welcome';
+                selectedLanguage = 'en';
+                userPhone = '';
+                sessionToken = '';
+                availableBookings = [];
+                selectedBooking = null;
+                stateHistory = [];
+
+                // Clear chat messages
+                const messagesContainer = document.getElementById('chatMessages');
+                messagesContainer.innerHTML = '';
+
+                // Reset input
+                disableInput();
+                document.getElementById('messageInput').value = '';
+
+                // Update buttons
+                updateBackButton();
+
+                // Restart the chatbot
+                setTimeout(() => {
+                    initializeChatbot();
+                }, 500);
+            }
+        }
+
+        // Add message to chat
+        function addBotMessage(text, isWelcome = false) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message bot ${isWelcome ? 'welcome-animation' : ''}`;
+
+            messageDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">${text}</div>
+            `;
+
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function addUserMessage(text) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+
+            messageDiv.innerHTML = `
+                <div class="message-avatar">👤</div>
+                <div class="message-content">${text}</div>
+            `;
+
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Show typing indicator
+        function showTyping() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typing-indicator';
+
+            typingDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="typing-indicator" style="display: block;">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+
+            messagesContainer.appendChild(typingDiv);
+            scrollToBottom();
+        }
+
+        function hideTyping() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // Show language selection options with more languages
+        function showLanguageOptions() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+
+            const optionsHtml = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    ${translations[selectedLanguage].languagePrompt}
+                    <div class="option-buttons">
+                        <div class="option-button" onclick="selectLanguage('en')">🇺🇸 English</div>
+                        <div class="option-button" onclick="selectLanguage('hi')">🇮🇳 हिंदी</div>
+                        <div class="option-button" onclick="selectLanguage('es')">🇪🇸 Español</div>
+                        <div class="option-button" onclick="selectLanguage('fr')">🇫🇷 Français</div>
+                        <div class="option-button" onclick="selectLanguage('de')">🇩🇪 Deutsch</div>
+                    </div>
+                </div>
+            `;
+
+            messageDiv.innerHTML = optionsHtml;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+            pushState('language');
+        }
+
+        // Language selection
+        function selectLanguage(lang) {
+            selectedLanguage = lang;
+            addUserMessage(document.querySelector(`[onclick="selectLanguage('${lang}')"]`).textContent);
+
+            setTimeout(() => {
+                addBotMessage(translations[selectedLanguage].phonePrompt);
+                pushState('phone');
+                enableInput();
+            }, 500);
+        }
+
+        // Enable/disable input
+        function enableInput() {
+            document.getElementById('messageInput').disabled = false;
+            document.getElementById('sendButton').disabled = false;
+            document.getElementById('messageInput').focus();
+        }
+
+        function disableInput() {
+            document.getElementById('messageInput').disabled = true;
+            document.getElementById('sendButton').disabled = true;
+        }
+
+        // Send message
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            addUserMessage(message);
+            input.value = '';
+            disableInput();
+
+            handleUserInput(message);
+        }
+
+        // Handle user input based on current state
+        function handleUserInput(message) {
+            switch (currentState) {
+                case 'phone':
+                    handlePhoneInput(message);
+                    break;
+                case 'booking_selection':
+                    // Handle booking selection if needed
+                    break;
+                case 'chat':
+                    handleChatMessage(message);
+                    break;
+            }
+        }
+
+        // Handle phone number input
+        async function handlePhoneInput(phone) {
+            userPhone = phone;
+
+            showTyping();
+            addBotMessage(translations[selectedLanguage].searchingBookings);
+            hideTyping();
+
+            try {
+                // Login user first
+                const loginResponse = await fetch('/user/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phone_number: phone,
+                        name: 'Guest User'
+                    })
+                });
+
+                if (loginResponse.ok) {
+                    const loginResult = await loginResponse.json();
+                    sessionToken = loginResult.session_token;
+
+                    // Search for bookings
+                    const searchResponse = await fetch('/bookings/search', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            session_token: sessionToken
+                        })
+                    });
+
+                    const searchResult = await searchResponse.json();
+
+                    if (searchResponse.ok && searchResult.bookings && searchResult.bookings.length > 0) {
+                        showBookingOptions(searchResult);
+                    } else {
+                        addBotMessage(translations[selectedLanguage].noBookings);
+                        // Stay in phone state for retry
+                        enableInput();
+                    }
+                } else {
+                    addBotMessage("Sorry, there was an error. Please try again.");
+                    enableInput();
+                }
+            } catch (error) {
+                addBotMessage("Sorry, there was a connection error. Please try again.");
+                enableInput();
+            }
+        }
+
+        // Show booking options with booking ID as title
+        function showBookingOptions(searchResult) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+
+            let bookingsHtml = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    ${translations[selectedLanguage].bookingsFound}
+            `;
+
+            // Use real booking data from API response
+            let realBookings = [];
+
+            if (searchResult.bookings && searchResult.bookings.length > 0) {
+                // Create booking objects from the IDs (in real implementation, you'd fetch full details)
+                realBookings = searchResult.bookings.map((bookingId, index) => ({
+                    id: bookingId,
+                    hotel_name: 'Treebo Club Worldtree Staging',
+                    location: 'Bengaluru, Karnataka',
+                    check_in: '2025-06-06',
+                    check_out: '2025-06-07',
+                    status: index === 0 ? 'reserved' : 'confirmed'
+                }));
+            }
+
+            realBookings.forEach((booking, index) => {
+                const statusEmoji = booking.status === 'reserved' ? '🟢' :
+                                  booking.status === 'confirmed' ? '🟡' : '✅';
+
+                bookingsHtml += `
+                    <div class="booking-card" onclick="selectBooking(${index})">
+                        <div class="booking-title">${booking.id}</div>
+                        <div class="booking-details">
+                            🏨 ${booking.hotel_name}<br>
+                            📍 ${booking.location}<br>
+                            📅 ${booking.check_in} to ${booking.check_out}<br>
+                            ${statusEmoji} ${booking.status}
+                        </div>
+                    </div>
+                `;
+            });
+
+            bookingsHtml += `</div>`;
+            messageDiv.innerHTML = bookingsHtml;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+
+            availableBookings = realBookings;
+            pushState('booking_selection');
+        }
+
+        // Select booking
+        function selectBooking(index) {
+            selectedBooking = availableBookings[index];
+
+            // Visual feedback
+            document.querySelectorAll('.booking-card').forEach((card, i) => {
+                if (i === index) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+
+            addUserMessage(`Selected: ${selectedBooking.id}`);
+
+            setTimeout(() => {
+                addBotMessage(translations[selectedLanguage].bookingSelected);
+                setTimeout(() => {
+                    showMainOptions();
+                }, 1000);
+            }, 500);
+        }
+
+        // Show main options with enhanced services
+        function showMainOptions() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+
+            const optionsHtml = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    ${translations[selectedLanguage].recommendationOptions}
+                    <div class="option-buttons">
+                        <div class="option-button" onclick="getRecommendations('restaurants')">${translations[selectedLanguage].restaurants}</div>
+                        <div class="option-button" onclick="getRecommendations('sightseeing')">${translations[selectedLanguage].sightseeing}</div>
+                        <div class="option-button" onclick="getRecommendations('events')">${translations[selectedLanguage].events}</div>
+                        <div class="option-button" onclick="getRecommendations('shopping')">${translations[selectedLanguage].shopping}</div>
+                        <div class="option-button" onclick="getRecommendations('nightlife')">${translations[selectedLanguage].nightlife}</div>
+                        <div class="option-button" onclick="getServices('atms')">${translations[selectedLanguage].atms}</div>
+                        <div class="option-button" onclick="getServices('hospitals')">${translations[selectedLanguage].hospitals}</div>
+                        <div class="option-button" onclick="getServices('pharmacy')">${translations[selectedLanguage].pharmacy}</div>
+                        <div class="option-button" onclick="getServices('rentals')">${translations[selectedLanguage].rentals}</div>
+                        <div class="option-button" onclick="getServices('taxi')">${translations[selectedLanguage].taxi}</div>
+                        <div class="option-button" onclick="showItineraryOptions()">${translations[selectedLanguage].itinerary}</div>
+                        <div class="option-button" onclick="showTravelPackages()">${translations[selectedLanguage].packages}</div>
+                    </div>
+                </div>
+            `;
+
+            messageDiv.innerHTML = optionsHtml;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+
+            pushState('chat');
+            enableInput();
+        }
+
+        // Get recommendations
+        async function getRecommendations(category) {
+            addUserMessage(translations[selectedLanguage][category]);
+
+            showTyping();
+
+            // Mock recommendations for demo
+            setTimeout(() => {
+                hideTyping();
+
+                const mockRecommendations = {
+                    restaurants: [
+                        { name: "The Spice Route", rating: "4.5⭐", distance: "0.5 km", type: "Indian Cuisine", price: "₹₹" },
+                        { name: "Cafe Mocha", rating: "4.2⭐", distance: "0.8 km", type: "Coffee & Snacks", price: "₹" },
+                        { name: "Pizza Corner", rating: "4.0⭐", distance: "1.2 km", type: "Italian", price: "₹₹" },
+                        { name: "Biryani House", rating: "4.6⭐", distance: "0.3 km", type: "Biryani & Kebabs", price: "₹₹" }
+                    ],
+                    sightseeing: [
+                        { name: "City Palace", rating: "4.7⭐", distance: "2.1 km", type: "Historical", price: "₹50" },
+                        { name: "Art Museum", rating: "4.3⭐", distance: "1.5 km", type: "Cultural", price: "₹30" },
+                        { name: "Central Park", rating: "4.1⭐", distance: "0.9 km", type: "Nature", price: "Free" },
+                        { name: "Heritage Walk", rating: "4.4⭐", distance: "1.8 km", type: "Guided Tour", price: "₹200" }
+                    ],
+                    events: [
+                        { name: "Live Music Night", rating: "4.4⭐", distance: "1.8 km", type: "Tonight 8 PM", price: "₹500" },
+                        { name: "Art Exhibition", rating: "4.2⭐", distance: "2.3 km", type: "This Weekend", price: "₹100" },
+                        { name: "Food Festival", rating: "4.6⭐", distance: "3.1 km", type: "All Week", price: "₹300" },
+                        { name: "Cultural Show", rating: "4.5⭐", distance: "2.5 km", type: "Daily 7 PM", price: "₹400" }
+                    ],
+                    shopping: [
+                        { name: "City Mall", rating: "4.3⭐", distance: "1.2 km", type: "Shopping Mall", price: "Varies" },
+                        { name: "Local Market", rating: "4.0⭐", distance: "0.7 km", type: "Street Shopping", price: "₹₹" },
+                        { name: "Handicraft Center", rating: "4.5⭐", distance: "2.0 km", type: "Souvenirs", price: "₹₹₹" }
+                    ],
+                    nightlife: [
+                        { name: "Rooftop Lounge", rating: "4.4⭐", distance: "1.5 km", type: "Bar & Lounge", price: "₹₹₹" },
+                        { name: "Night Club", rating: "4.2⭐", distance: "2.2 km", type: "Dance Club", price: "₹₹₹₹" },
+                        { name: "Sports Bar", rating: "4.1⭐", distance: "1.8 km", type: "Sports & Drinks", price: "₹₹" }
+                    ]
+                };
+
+                const recommendations = mockRecommendations[category] || mockRecommendations.restaurants;
+                showRecommendations(recommendations, category);
+            }, 1500);
+        }
+
+        // Get services (ATMs, hospitals, etc.)
+        async function getServices(category) {
+            addUserMessage(translations[selectedLanguage][category]);
+
+            showTyping();
+
+            setTimeout(() => {
+                hideTyping();
+
+                const mockServices = {
+                    atms: [
+                        { name: "HDFC Bank ATM", rating: "4.2⭐", distance: "0.2 km", type: "24/7 Available", price: "Free" },
+                        { name: "SBI ATM", rating: "4.0⭐", distance: "0.4 km", type: "24/7 Available", price: "Free" },
+                        { name: "ICICI Bank ATM", rating: "4.1⭐", distance: "0.6 km", type: "24/7 Available", price: "Free" }
+                    ],
+                    hospitals: [
+                        { name: "City Hospital", rating: "4.5⭐", distance: "1.2 km", type: "Multi-specialty", price: "Emergency" },
+                        { name: "Apollo Clinic", rating: "4.3⭐", distance: "0.8 km", type: "General Practice", price: "₹500" },
+                        { name: "Emergency Care", rating: "4.0⭐", distance: "2.1 km", type: "24/7 Emergency", price: "Varies" }
+                    ],
+                    pharmacy: [
+                        { name: "MedPlus", rating: "4.2⭐", distance: "0.3 km", type: "24/7 Pharmacy", price: "Medicines" },
+                        { name: "Apollo Pharmacy", rating: "4.4⭐", distance: "0.5 km", type: "Chain Pharmacy", price: "Medicines" },
+                        { name: "Local Pharmacy", rating: "4.0⭐", distance: "0.2 km", type: "General Store", price: "Medicines" }
+                    ],
+                    rentals: [
+                        { name: "Zoomcar", rating: "4.3⭐", distance: "0.5 km", type: "Self-drive Cars", price: "₹2000/day" },
+                        { name: "Bike Rental Hub", rating: "4.1⭐", distance: "0.3 km", type: "Bikes & Scooters", price: "₹500/day" },
+                        { name: "Ola Rentals", rating: "4.2⭐", distance: "0.7 km", type: "Car Rentals", price: "₹1800/day" }
+                    ],
+                    taxi: [
+                        { name: "Uber", rating: "4.4⭐", distance: "Available", type: "Ride Hailing", price: "₹10/km" },
+                        { name: "Ola", rating: "4.3⭐", distance: "Available", type: "Ride Hailing", price: "₹9/km" },
+                        { name: "Local Taxi", rating: "4.0⭐", distance: "Available", type: "Traditional Taxi", price: "₹12/km" }
+                    ]
+                };
+
+                const services = mockServices[category] || mockServices.atms;
+                showServices(services, category);
+            }, 1500);
+        }
+
+        // Show itinerary options
+        function showItineraryOptions() {
+            addUserMessage(translations[selectedLanguage].itinerary);
+
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+
+            // Calculate stay duration
+            const checkIn = new Date(selectedBooking.check_in);
+            const checkOut = new Date(selectedBooking.check_out);
+            const stayDays = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+
+            const optionsHtml = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    I can create a personalized itinerary for your ${stayDays}-day stay! Choose an option:
+                    <div class="option-buttons">
+                        <div class="option-button" onclick="generateItinerary(1)">📅 1-Day Itinerary</div>
+                        <div class="option-button" onclick="generateItinerary(2)">📅 2-Day Itinerary</div>
+                        <div class="option-button" onclick="generateItinerary(${stayDays})">📅 ${stayDays}-Day Full Stay</div>
+                        <div class="option-button" onclick="generateItinerary('custom')">📅 Custom Itinerary</div>
+                    </div>
+                </div>
+            `;
+
+            messageDiv.innerHTML = optionsHtml;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Generate itinerary
+        function generateItinerary(days) {
+            if (days === 'custom') {
+                addUserMessage("Custom Itinerary");
+                addBotMessage("Please tell me what you're interested in (adventure, culture, food, relaxation, etc.) and I'll create a custom itinerary for you!");
+                enableInput();
+                return;
+            }
+
+            addUserMessage(`${days}-Day Itinerary`);
+
+            showTyping();
+
+            setTimeout(() => {
+                hideTyping();
+
+                const itineraries = {
+                    1: [
+                        {
+                            day: "Day 1",
+                            activities: [
+                                "9:00 AM - Breakfast at hotel",
+                                "10:00 AM - Visit City Palace (2 hours)",
+                                "1:00 PM - Lunch at The Spice Route",
+                                "3:00 PM - Shopping at Local Market",
+                                "6:00 PM - Evening at Central Park",
+                                "8:00 PM - Dinner at Biryani House"
+                            ]
+                        }
+                    ],
+                    2: [
+                        {
+                            day: "Day 1",
+                            activities: [
+                                "9:00 AM - Breakfast at hotel",
+                                "10:00 AM - Heritage Walk (3 hours)",
+                                "2:00 PM - Lunch at Cafe Mocha",
+                                "4:00 PM - Art Museum visit",
+                                "7:00 PM - Cultural Show",
+                                "9:00 PM - Dinner at The Spice Route"
+                            ]
+                        },
+                        {
+                            day: "Day 2",
+                            activities: [
+                                "9:00 AM - Breakfast at hotel",
+                                "10:00 AM - City Palace exploration",
+                                "1:00 PM - Lunch at Pizza Corner",
+                                "3:00 PM - Shopping at City Mall",
+                                "6:00 PM - Relaxation at Central Park",
+                                "8:00 PM - Live Music Night"
+                            ]
+                        }
+                    ]
+                };
+
+                // Default to 2-day if not found
+                const selectedItinerary = itineraries[days] || itineraries[2];
+                showItinerary(selectedItinerary, days);
+            }, 2000);
+        }
+
+        // Show travel packages
+        function showTravelPackages() {
+            addUserMessage(translations[selectedLanguage].packages);
+
+            showTyping();
+
+            setTimeout(() => {
+                hideTyping();
+
+                const packages = [
+                    {
+                        name: "Heritage Explorer Package",
+                        price: "₹2,999",
+                        duration: "Full Day",
+                        includes: "Guide + Transport + Lunch + Entry Fees",
+                        description: "Explore historical sites with expert guide"
+                    },
+                    {
+                        name: "Foodie Adventure Package",
+                        price: "₹1,899",
+                        duration: "Half Day",
+                        includes: "Food Tour + 5 Restaurants + Guide",
+                        description: "Taste authentic local cuisine"
+                    },
+                    {
+                        name: "Shopping & Spa Package",
+                        price: "₹3,499",
+                        duration: "Full Day",
+                        includes: "Shopping Guide + Spa Session + Transport",
+                        description: "Shop and relax in style"
+                    },
+                    {
+                        name: "Adventure Sports Package",
+                        price: "₹4,299",
+                        duration: "Full Day",
+                        includes: "Activities + Equipment + Instructor + Lunch",
+                        description: "Thrilling outdoor adventures"
+                    }
+                ];
+
+                showPackages(packages);
+            }, 1500);
+        }
+
+        // Show recommendations in chat
+        function showRecommendations(recommendations, category) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+
+            let recsHtml = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    Here are great ${category} near your hotel:
+            `;
+
+            recommendations.forEach(rec => {
+                recsHtml += `
+                    <div class="recommendation-card">
+                        <div class="rec-name">${rec.name}</div>
+                        <div class="rec-details">
+                            <span>${rec.type}</span>
+                            <span>${rec.rating} • ${rec.distance}</span>
+                        </div>
+                        <div class="rec-details">
+                            <span class="price-tag">${rec.price}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            recsHtml += `</div>`;
+            messageDiv.innerHTML = recsHtml;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Show services in chat
+        function showServices(services, category) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+
+            let servicesHtml = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    Here are nearby ${category}:
+            `;
+
+            services.forEach(service => {
+                servicesHtml += `
+                    <div class="service-card">
+                        <div class="service-name">${service.name}</div>
+                        <div class="service-details">
+                            <span>${service.type}</span>
+                            <span>${service.rating} • ${service.distance}</span>
+                        </div>
+                        <div class="service-details">
+                            <span class="price-tag">${service.price}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            servicesHtml += `</div>`;
+            messageDiv.innerHTML = servicesHtml;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Show itinerary
+        function showItinerary(itinerary, days) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+
+            let itineraryHtml = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    Here's your personalized ${days}-day itinerary:
+            `;
+
+            itinerary.forEach(day => {
+                itineraryHtml += `
+                    <div class="itinerary-day">
+                        <div class="day-title">${day.day}</div>
+                        <div class="day-activities">
+                `;
+
+                day.activities.forEach(activity => {
+                    itineraryHtml += `• ${activity}<br>`;
+                });
+
+                itineraryHtml += `
+                        </div>
+                    </div>
+                `;
+            });
+
+            itineraryHtml += `
+                    <div class="option-buttons" style="margin-top: 15px;">
+                        <div class="option-button" onclick="bookItinerary()">📅 Book This Itinerary</div>
+                        <div class="option-button" onclick="customizeItinerary()">✏️ Customize</div>
+                    </div>
+                </div>
+            `;
+
+            messageDiv.innerHTML = itineraryHtml;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Show travel packages
+        function showPackages(packages) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+
+            let packagesHtml = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    Here are our exclusive travel packages:
+            `;
+
+            packages.forEach((pkg, index) => {
+                packagesHtml += `
+                    <div class="itinerary-card" onclick="selectPackage(${index})">
+                        <div class="itinerary-title">${pkg.name}</div>
+                        <div class="itinerary-details">
+                            <span>${pkg.duration}</span>
+                            <span class="price-tag">${pkg.price}</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #666; margin-top: 4px;">
+                            ${pkg.includes}
+                        </div>
+                        <div style="font-size: 0.85rem; color: #555; margin-top: 6px;">
+                            ${pkg.description}
+                        </div>
+                    </div>
+                `;
+            });
+
+            packagesHtml += `</div>`;
+            messageDiv.innerHTML = packagesHtml;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Package selection
+        function selectPackage(index) {
+            const packages = [
+                { name: "Heritage Explorer Package", price: "₹2,999" },
+                { name: "Foodie Adventure Package", price: "₹1,899" },
+                { name: "Shopping & Spa Package", price: "₹3,499" },
+                { name: "Adventure Sports Package", price: "₹4,299" }
+            ];
+
+            const selectedPackage = packages[index];
+            addUserMessage(`Selected: ${selectedPackage.name}`);
+
+            setTimeout(() => {
+                addBotMessage(`Great choice! The ${selectedPackage.name} costs ${selectedPackage.price}. Would you like to proceed with booking?`);
+
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message bot';
+
+                const bookingHtml = `
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <div class="option-buttons">
+                            <div class="option-button" onclick="bookPackage('${selectedPackage.name}', '${selectedPackage.price}')">✅ Book Now</div>
+                            <div class="option-button" onclick="showMainOptions()">🔙 Back to Menu</div>
+                        </div>
+                    </div>
+                `;
+
+                messageDiv.innerHTML = bookingHtml;
+                messagesContainer.appendChild(messageDiv);
+                scrollToBottom();
+            }, 500);
+        }
+
+        // Book package
+        function bookPackage(packageName, price) {
+            addUserMessage("Book Now");
+            addBotMessage(`Perfect! I'm processing your booking for ${packageName} at ${price}. You'll receive a confirmation shortly. Our team will contact you within 30 minutes to finalize the details.`);
+
+            setTimeout(() => {
+                addBotMessage("Is there anything else I can help you with today?");
+                showMainOptions();
+            }, 2000);
+        }
+
+        // Book itinerary
+        function bookItinerary() {
+            addUserMessage("Book This Itinerary");
+            addBotMessage("Excellent! I'm creating a personalized booking for your itinerary. Our travel concierge will contact you within 30 minutes to arrange all the details and provide pricing.");
+
+            setTimeout(() => {
+                addBotMessage("Would you like to explore more options or need help with anything else?");
+                showMainOptions();
+            }, 2000);
+        }
+
+        // Customize itinerary
+        function customizeItinerary() {
+            addUserMessage("Customize");
+            addBotMessage("I'd love to customize this itinerary for you! Please tell me what changes you'd like - different activities, timing, or specific interests you have.");
+            enableInput();
+        }
+
+        // Handle chat messages
+        function handleChatMessage(message) {
+            showTyping();
+
+            setTimeout(() => {
+                hideTyping();
+
+                // Simple keyword-based responses
+                const lowerMessage = message.toLowerCase();
+
+                if (lowerMessage.includes('food') || lowerMessage.includes('restaurant')) {
+                    getRecommendations('restaurants');
+                } else if (lowerMessage.includes('sightseeing') || lowerMessage.includes('places')) {
+                    getRecommendations('sightseeing');
+                } else if (lowerMessage.includes('shopping')) {
+                    getRecommendations('shopping');
+                } else if (lowerMessage.includes('hospital') || lowerMessage.includes('medical')) {
+                    getServices('hospitals');
+                } else if (lowerMessage.includes('atm') || lowerMessage.includes('money')) {
+                    getServices('atms');
+                } else if (lowerMessage.includes('taxi') || lowerMessage.includes('cab')) {
+                    getServices('taxi');
+                } else if (lowerMessage.includes('itinerary') || lowerMessage.includes('plan')) {
+                    showItineraryOptions();
+                } else if (lowerMessage.includes('package') || lowerMessage.includes('tour')) {
+                    showTravelPackages();
+                } else {
+                    addBotMessage("I'm here to help! You can ask me about restaurants, attractions, events, shopping, services like ATMs and hospitals, or I can create a travel itinerary for you. What interests you most?");
+                    enableInput();
+                }
+            }, 1000);
+        }
+
+        // Scroll to bottom
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Handle Enter key
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 sendMessage();
             }
         });
 
-        // Add click handler to send button (backup to onclick)
-        document.getElementById('send-button').addEventListener('click', function(e) {
-            e.preventDefault();
-            sendMessage();
-        });
-
-        // Set welcome timestamp
-        document.getElementById('welcome-timestamp').textContent = new Date().toLocaleTimeString();
-
-        // Initialize voice recognition if available
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.lang = 'en-US';
-
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                document.getElementById('message-input').value = transcript;
-                sendMessage();
-            };
-
-            recognition.onerror = function(event) {
-                console.error('Speech recognition error:', event.error);
-                showStatus('chat-status', 'Voice input error. Please try again.', 'error');
-            };
-        }
-
-        // Update stats periodically
-        setInterval(updateStats, 5000);
-
-        async function simulateBookingEvent(eventType) {
-            let eventData;
-
-            if (eventType === 'sample1') {
-                eventData = getSampleBookingEvent1();
-            } else if (eventType === 'sample2') {
-                eventData = getSampleBookingEvent2();
-            } else if (eventType === 'custom') {
-                document.getElementById('custom-event-section').style.display = 'block';
-                return;
-            }
-
-            await sendBookingEvent(eventData);
-        }
-
-        async function sendCustomEvent() {
-            const customJson = document.getElementById('custom-event-json').value;
-
-            try {
-                const eventData = JSON.parse(customJson);
-                await sendBookingEvent(eventData);
-                hideCustomEvent();
-            } catch (error) {
-                showStatus('booking-status', `Invalid JSON: ${error.message}`, 'error');
-            }
-        }
-
-        function hideCustomEvent() {
-            document.getElementById('custom-event-section').style.display = 'none';
-            document.getElementById('custom-event-json').value = '';
-        }
-
-        async function sendBookingEvent(eventData) {
-            try {
-                showStatus('booking-status', 'Processing booking event...', 'info');
-
-                const response = await fetch(`${API_BASE}/webhook/booking`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(eventData)
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    currentSessionId = result.session_id;
-                    showStatus('booking-status', `✅ Booking processed! Session ID: ${currentSessionId}`, 'success');
-                    showStatus('chat-status', '🎉 Chat is now active! You can send messages below.', 'success');
-
-                    // Enable chat interface
-                    const messageInput = document.getElementById('message-input');
-                    messageInput.disabled = false;
-                    messageInput.placeholder = 'Type your message here...';
-                    document.getElementById('send-button').disabled = false;
-                    document.getElementById('voice-button').disabled = false;
-                    document.getElementById('recommendations-section').style.display = 'block';
-                    document.getElementById('quick-actions').style.display = 'flex';
-
-                    // Focus on the input field
-                    messageInput.focus();
-
-                    // Load chat history
-                    loadChatHistory();
-
-                    // Update stats
-                    updateStats();
-                } else {
-                    showStatus('booking-status', `Error: ${result.error}`, 'error');
-                }
-            } catch (error) {
-                showStatus('booking-status', `Error: ${error.message}`, 'error');
-            }
-        }
-
-        async function sendMessage() {
-            const messageInput = document.getElementById('message-input');
-            const message = messageInput.value.trim();
-
-            // Debug logging
-            console.log('sendMessage called:', { message, currentSessionId });
-
-            if (!message) {
-                console.log('No message to send');
-                return;
-            }
-
-            if (!currentSessionId) {
-                console.log('No session ID - please create a booking first');
-                showStatus('chat-status', 'Please create a booking first by clicking one of the sample booking buttons above!', 'error');
-                return;
-            }
-
-            try {
-                // Add user message to chat
-                addMessageToChat('user', message);
-                messageInput.value = '';
-                messageCount++;
-
-                // Show typing indicator
-                showTypingIndicator();
-
-                const response = await fetch(`${API_BASE}/chat/message`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        session_id: currentSessionId,
-                        message: message
-                    })
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    // Hide typing indicator
-                    hideTypingIndicator();
-
-                    // Add bot response to chat
-                    addMessageToChat('bot', result.response.message);
-
-                    // Display recommendations if available
-                    if (result.response.metadata && result.response.metadata.recommendations) {
-                        displayRecommendations(result.response.metadata.recommendations);
-                        recommendationCount += result.response.metadata.recommendations.length;
-                    }
-                } else {
-                    hideTypingIndicator();
-                    addMessageToChat('bot', `Error: ${result.error}`);
-                }
-            } catch (error) {
-                hideTypingIndicator();
-                addMessageToChat('bot', `Error: ${error.message}`);
-            }
-        }
-
-        async function getRecommendations(category) {
-            if (!currentSessionId) return;
-
-            try {
-                const response = await fetch(`${API_BASE}/chat/recommendations/${currentSessionId}/${category}`);
-                const result = await response.json();
-
-                if (response.ok) {
-                    addMessageToChat('bot', result.message);
-                    displayRecommendations(result.recommendations);
-                } else {
-                    addMessageToChat('bot', `Error getting ${category} recommendations: ${result.error}`);
-                }
-            } catch (error) {
-                addMessageToChat('bot', `Error: ${error.message}`);
-            }
-        }
-
-        async function loadChatHistory() {
-            if (!currentSessionId) return;
-
-            try {
-                const response = await fetch(`${API_BASE}/chat/history/${currentSessionId}`);
-                const result = await response.json();
-
-                if (response.ok) {
-                    const chatContainer = document.getElementById('chat-container');
-                    chatContainer.innerHTML = '';
-
-                    result.messages.forEach(msg => {
-                        addMessageToChat(msg.message_type, msg.content);
-                    });
-                }
-            } catch (error) {
-                console.error('Error loading chat history:', error);
-            }
-        }
-
-        function addMessageToChat(type, content) {
-            const chatContainer = document.getElementById('chat-container');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}`;
-            messageDiv.innerHTML = content.replace(/\n/g, '<br>');
-
-            // Add timestamp
-            const timestamp = document.createElement('div');
-            timestamp.className = 'message-timestamp';
-            timestamp.textContent = new Date().toLocaleTimeString();
-            messageDiv.appendChild(timestamp);
-
-            chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        function displayRecommendations(recommendations) {
-            const recommendationsDisplay = document.getElementById('recommendations-display');
-
-            if (!recommendations || recommendations.length === 0) {
-                recommendationsDisplay.innerHTML = '';
-                return;
-            }
-
-            let html = '<div class="recommendations"><h3>Recommendations</h3>';
-
-            recommendations.slice(0, 3).forEach(rec => {
-                html += `
-                    <div class="recommendation-item">
-                        <h4>${rec.name || 'Unknown'}</h4>
-                        ${rec.rating ? `<div class="rating">⭐ ${rec.rating}/5</div>` : ''}
-                        ${rec.distance ? `<div class="distance">📍 ${rec.distance} km away</div>` : ''}
-                        ${rec.address ? `<div class="address">${rec.address}</div>` : ''}
-                    </div>
-                `;
-            });
-
-            html += '</div>';
-            recommendationsDisplay.innerHTML = html;
-        }
-
-        function showStatus(elementId, message, type) {
-            const statusElement = document.getElementById(elementId);
-            statusElement.innerHTML = `<div class="status ${type}">${message}</div>`;
-
-            if (type === 'success' || type === 'info') {
-                setTimeout(() => {
-                    statusElement.innerHTML = '';
-                }, 5000);
-            }
-        }
-
-        function showTypingIndicator() {
-            document.getElementById('typing-indicator').style.display = 'block';
-            const chatContainer = document.getElementById('chat-container');
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        function hideTypingIndicator() {
-            document.getElementById('typing-indicator').style.display = 'none';
-        }
-
-        function sendQuickMessage(message) {
-            document.getElementById('message-input').value = message;
-            sendMessage();
-        }
-
-        function toggleVoiceInput() {
-            if (!recognition) {
-                showStatus('chat-status', 'Voice input not supported in this browser', 'error');
-                return;
-            }
-
-            if (isVoiceInputActive) {
-                recognition.stop();
-                isVoiceInputActive = false;
-                document.getElementById('voice-button').textContent = '🎤';
-            } else {
-                recognition.start();
-                isVoiceInputActive = true;
-                document.getElementById('voice-button').textContent = '🔴';
-                showStatus('chat-status', 'Listening... Speak now!', 'info');
-            }
-        }
-
-        function changeUILanguage() {
-            const language = document.getElementById('ui-language').value;
-            // This would typically integrate with an i18n library
-            console.log('UI Language changed to:', language);
-        }
-
-        async function updateStats() {
-            try {
-                const response = await fetch(`${API_BASE}/stats`);
-                if (response.ok) {
-                    const stats = await response.json();
-                    document.getElementById('active-sessions').textContent = stats.active_sessions || '1';
-                    document.getElementById('total-messages').textContent = messageCount;
-                    document.getElementById('recommendations-given').textContent = recommendationCount;
-                    document.getElementById('system-status').textContent = '🟢';
-                } else {
-                    document.getElementById('system-status').textContent = '🔴';
-                }
-            } catch (error) {
-                document.getElementById('system-status').textContent = '🔴';
-            }
-        }
-
-        function getSampleBookingEvent1() {
-            const timestamp = Date.now();
-            return {
-                "message_id": `EVT-${timestamp}-1`,
-                "generated_at": new Date().toISOString(),
-                "events": [
-                    {
-                        "entity_name": "booking",
-                        "payload": {
-                            "booking_id": `SAMPLE1-${timestamp}`,
-                            "reference_number": `TRB-SAMPLE1-${timestamp}`,
-                            "hotel_id": "0016581",
-                            "status": "reserved",
-                            "checkin_date": "2025-06-05T14:00:00+05:30",
-                            "checkout_date": "2025-06-06T12:00:00+05:30",
-                            "source": {
-                                "channel_code": "direct",
-                                "application_code": "website",
-                                "subchannel_code": "website-direct"
-                            },
-                            "customers": [
-                                {
-                                    "customer_id": "1",
-                                    "first_name": "Vivek",
-                                    "last_name": "Yadav",
-                                    "email": "vivek.yadav@example.com",
-                                    "phone": {
-                                        "number": "8904348449",
-                                        "country_code": "+91"
-                                    },
-                                    "is_primary": false,
-                                    "dummy": false
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "entity_name": "bill",
-                        "payload": {
-                            "vendor_details": {
-                                "hotel_name": "Treebo Club Worldtree Staging",
-                                "vendor_name": "Treebo Club Worldtree Staging",
-                                "address": {
-                                    "field_1": "#204, Prashant Extension, Near Hope Farm Whitefield",
-                                    "city": "Bangalore",
-                                    "state": "Karnataka",
-                                    "pincode": "560066"
-                                },
-                                "phone": {
-                                    "number": "9322800100",
-                                    "country_code": "+91"
-                                },
-                                "email": "hello@treebohotels.com"
-                            }
-                        }
-                    }
-                ],
-                "event_type": "booking.created"
-            };
-        }
-
-        function getSampleBookingEvent2() {
-            const timestamp = Date.now();
-            return {
-                "message_id": `EVT-${timestamp}-2`,
-                "generated_at": new Date().toISOString(),
-                "events": [
-                    {
-                        "entity_name": "booking",
-                        "payload": {
-                            "booking_id": `SAMPLE2-${timestamp}`,
-                            "reference_number": `TRB-SAMPLE2-${timestamp}`,
-                            "hotel_id": "0016582",
-                            "status": "reserved",
-                            "checkin_date": "2025-06-06T14:00:00+05:30",
-                            "checkout_date": "2025-06-08T12:00:00+05:30",
-                            "source": {
-                                "channel_code": "direct",
-                                "application_code": "mobile",
-                                "subchannel_code": "mobile-app"
-                            },
-                            "customers": [
-                                {
-                                    "customer_id": "2",
-                                    "first_name": "John",
-                                    "last_name": "Doe",
-                                    "email": "john.doe@example.com",
-                                    "phone": {
-                                        "number": "9876543210",
-                                        "country_code": "+91"
-                                    },
-                                    "is_primary": false,
-                                    "dummy": false
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "entity_name": "bill",
-                        "payload": {
-                            "vendor_details": {
-                                "hotel_name": "Treebo Trend Hotel",
-                                "vendor_name": "Treebo Trend Hotel",
-                                "address": {
-                                    "field_1": "Connaught Place",
-                                    "city": "New Delhi",
-                                    "state": "Delhi",
-                                    "pincode": "110001"
-                                },
-                                "phone": {
-                                    "number": "9322800100",
-                                    "country_code": "+91"
-                                },
-                                "email": "hello@treebohotels.com"
-                            }
-                        }
-                    }
-                ],
-                "event_type": "booking.created"
-            };
-        }
-
-        // Debug function to check current state
-        function debugChatState() {
-            console.log('=== Chat Debug Info ===');
-            console.log('Current Session ID:', currentSessionId);
-            console.log('Message Input Disabled:', document.getElementById('message-input').disabled);
-            console.log('Send Button Disabled:', document.getElementById('send-button').disabled);
-            console.log('Message Input Value:', document.getElementById('message-input').value);
-            console.log('======================');
-        }
-
-        // Make debug function available globally
-        window.debugChatState = debugChatState;
+        // Initialize when page loads
+        window.addEventListener('load', initializeChatbot);
     </script>
 </body>
 </html>

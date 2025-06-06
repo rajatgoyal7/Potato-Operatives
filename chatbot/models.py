@@ -2,6 +2,7 @@ from datetime import datetime
 from config.database import db
 from sqlalchemy.dialects.postgresql import JSON
 import json
+import uuid
 
 class Booking(db.Model):
     """Model for storing booking information"""
@@ -102,13 +103,32 @@ class Recommendation(db.Model):
     def is_expired(self):
         return datetime.utcnow() > self.expires_at
 
-class UserPreference(db.Model):
-    """Model for storing user preferences"""
-    __tablename__ = 'user_preferences'
+
+class User(db.Model):
+    """Model for storing user information and sessions"""
+    __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    guest_email = db.Column(db.String(200), nullable=False)
-    preferences = db.Column(JSON)  # Store user preferences as JSON
-    language = db.Column(db.String(10), default='en')
+    phone_number = db.Column(db.String(20), unique=True, nullable=False)
+    name = db.Column(db.String(200))
+    email = db.Column(db.String(200))
+    session_token = db.Column(db.String(100), unique=True)
+    is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def generate_session_token(self):
+        """Generate a new session token for the user"""
+        self.session_token = str(uuid.uuid4())
+        return self.session_token
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'phone_number': self.phone_number,
+            'name': self.name,
+            'email': self.email,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }

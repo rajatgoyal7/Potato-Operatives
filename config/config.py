@@ -36,7 +36,11 @@ class Config:
     
     # Webhook security
     WEBHOOK_SECRET = os.environ.get('WEBHOOK_SECRET') or 'treebo-webhook-secret'
-    
+
+    # External Booking Search API
+    BOOKING_SEARCH_API_URL = os.environ.get('BOOKING_SEARCH_API_URL') or 'https://growth.treebo.be/growth-realization/custom_message/search_booking_by_phone/'
+    BOOKING_SEARCH_API_AUTH = os.environ.get('BOOKING_SEARCH_API_AUTH') or 'Basic c3VfdXNlcjpFN3FVazl1X2ZxOF9XQg=='
+
     # Celery configuration
     CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL') or 'redis://localhost:6379/1'
     CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND') or 'redis://localhost:6379/1'

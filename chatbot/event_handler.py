@@ -1,10 +1,12 @@
 import logging
 import json
 from datetime import datetime
+from typing import Dict, List
 from chatbot.models import Booking, db
 from chatbot.chatbot_service import ChatbotService
 from chatbot.translation_service import TranslationService
 from chatbot.mapmyindia_service import MapMyIndiaService
+from chatbot.booking_search_service import BookingSearchService
 from geopy.geocoders import Nominatim
 import hashlib
 import hmac
@@ -18,6 +20,7 @@ class EventHandler:
         self.chatbot_service = ChatbotService()
         self.translation_service = TranslationService()
         self.mapmyindia_service = MapMyIndiaService()
+        self.booking_search_service = BookingSearchService()
         # Keep Nominatim as fallback
         self.geocoder = Nominatim(user_agent="treebo-chatbot")
     
@@ -425,13 +428,171 @@ class EventHandler:
             booking = Booking.query.filter_by(booking_id=booking_id).first()
             if not booking:
                 return None
-            
+
             return {
                 'booking': booking.to_dict(),
                 'chat_sessions': len(booking.chat_sessions),
                 'active_sessions': len([s for s in booking.chat_sessions if s.is_active])
             }
-            
+
         except Exception as e:
             logger.error(f"Error getting booking summary: {e}")
             return None
+
+    def process_api_booking_data(self, bookings_data: List[Dict]) -> Dict:
+        """
+        Process booking data from external API response and create bookings/chat sessions
+
+        Args:
+            bookings_data (List[Dict]): List of booking data from API
+
+        Returns:
+            Dict: Processing result with created bookings and sessions
+        """
+        try:
+            results = {
+                'status': 'success',
+                'processed_bookings': [],
+                'created_sessions': [],
+                'errors': []
+            }
+
+            for booking_data in bookings_data:
+                try:
+                    # Process each booking
+                    result = self._process_single_api_booking(booking_data)
+
+                    if result['status'] == 'success':
+                        results['processed_bookings'].append(result['booking_id'])
+                        if 'session_id' in result:
+                            results['created_sessions'].append(result['session_id'])
+                    else:
+                        results['errors'].append({
+                            'booking_data': booking_data,
+                            'error': result.get('message', 'Unknown error')
+                        })
+
+                except Exception as e:
+                    logger.error(f"Error processing individual booking: {e}")
+                    results['errors'].append({
+                        'booking_data': booking_data,
+                        'error': str(e)
+                    })
+
+            logger.info(f"Processed {len(results['processed_bookings'])} bookings, "
+                       f"created {len(results['created_sessions'])} sessions, "
+                       f"{len(results['errors'])} errors")
+
+            return results
+
+        except Exception as e:
+            logger.error(f"Error processing API booking data: {e}")
+            return {
+                'status': 'error',
+                'message': str(e),
+                'processed_bookings': [],
+                'created_sessions': [],
+                'errors': []
+            }
+
+    def _process_single_api_booking(self, booking_data: Dict) -> Dict:
+        """
+        Process a single booking from API data
+
+        Args:
+            booking_data (Dict): Single booking data from API
+
+        Returns:
+            Dict: Processing result
+        """
+        try:
+            # Extract required fields
+            booking_id = booking_data.get('booking_id')
+            guest_name = booking_data.get('guest_name', 'Guest')
+            guest_email = booking_data.get('guest_email', '')
+            guest_phone = booking_data.get('guest_phone', '')
+            hotel_name = booking_data.get('hotel_name', 'Hotel')
+            hotel_location = booking_data.get('hotel_location', 'Location not provided')
+
+            # Validate required fields
+            if not booking_id:
+                raise ValueError("Missing booking_id in API data")
+
+            if not guest_email:
+                logger.warning(f"No guest email for booking {booking_id}")
+                guest_email = f"guest_{booking_id}@example.com"  # Fallback email
+
+            # Check if booking already exists
+            existing_booking = Booking.query.filter_by(booking_id=booking_id).first()
+            if existing_booking:
+                logger.info(f"Booking {booking_id} already exists, creating new chat session...")
+                return self._update_existing_booking(existing_booking, booking_data)
+
+            # Get coordinates for hotel location
+            coordinates = {'latitude': None, 'longitude': None}
+            if hotel_location and hotel_location != 'Location not provided':
+                coordinates = self._get_coordinates(hotel_location)
+
+            # Parse dates
+            check_in_date = None
+            check_out_date = None
+
+            if booking_data.get('check_in_date'):
+                try:
+                    check_in_date = datetime.strptime(booking_data['check_in_date'], '%Y-%m-%d').date()
+                except ValueError:
+                    logger.warning(f"Could not parse check_in_date: {booking_data['check_in_date']}")
+
+            if booking_data.get('check_out_date'):
+                try:
+                    check_out_date = datetime.strptime(booking_data['check_out_date'], '%Y-%m-%d').date()
+                except ValueError:
+                    logger.warning(f"Could not parse check_out_date: {booking_data['check_out_date']}")
+
+            # Create new booking record
+            booking = Booking(
+                booking_id=booking_id,
+                guest_name=guest_name,
+                guest_email=guest_email,
+                guest_phone=guest_phone,
+                hotel_name=hotel_name,
+                hotel_location=hotel_location,
+                latitude=coordinates.get('latitude'),
+                longitude=coordinates.get('longitude'),
+                check_in_date=check_in_date,
+                check_out_date=check_out_date,
+                guest_language=booking_data.get('guest_language', 'en'),
+                reference_number=booking_data.get('reference_number'),
+                hotel_id=booking_data.get('hotel_id'),
+                booking_status=booking_data.get('booking_status', 'confirmed'),
+                booking_source=booking_data.get('booking_source'),
+                raw_event_data=booking_data  # Store raw data for debugging
+            )
+
+            db.session.add(booking)
+            db.session.commit()
+
+            # Create chat session and send welcome message
+            chat_session = self.chatbot_service.create_chat_session(
+                booking_id,
+                booking_data.get('guest_language', 'en')
+            )
+
+            logger.info(f"Successfully processed API booking for {booking_id}")
+
+            return {
+                'status': 'success',
+                'message': 'Booking processed and chat session created',
+                'booking_id': booking_id,
+                'session_id': chat_session['session_id'],
+                'coordinates': coordinates
+            }
+
+        except Exception as e:
+            logger.error(f"Error processing single API booking: {e}")
+            db.session.rollback()
+            return {
+                'status': 'error',
+                'message': str(e),
+                'booking_data': booking_data
+            }
