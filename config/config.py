@@ -13,17 +13,11 @@ class Config:
     REDIS_URL = os.environ.get('REDIS_URL') or 'redis://localhost:6379/0'
     
     # External API configurations
-    # MapMyIndia API (Free alternative to Google Maps)
-    MAPMYINDIA_API_KEY = os.environ.get('MAPMYINDIA_API_KEY')
-    MAPMYINDIA_CLIENT_ID = os.environ.get('MAPMYINDIA_CLIENT_ID')
-    MAPMYINDIA_CLIENT_SECRET = os.environ.get('MAPMYINDIA_CLIENT_SECRET')
-
-    # Legacy Google Maps API (kept for fallback)
+    # Google Places API for location services
     GOOGLE_PLACES_API_KEY = os.environ.get('GOOGLE_PLACES_API_KEY')
 
     # Other APIs
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
-    FOURSQUARE_API_KEY = os.environ.get('FOURSQUARE_API_KEY')
     
     # Chatbot configuration
     DEFAULT_LANGUAGE = 'en'

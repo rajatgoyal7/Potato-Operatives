@@ -31,7 +31,7 @@ An event-driven chatbot system that provides location-specific recommendations (
                     ┌─────────────────┐
                     │   External APIs │
                     │   (Google Places│
-                    │   Foursquare)   │
+                    │   API)          │
                     └─────────────────┘
 ```
 
@@ -57,12 +57,7 @@ cp .env.example .env
 Edit `.env` file with your API keys:
 
 ```bash
-# MapMyIndia API (Primary - Free)
-MAPMYINDIA_API_KEY=your_mapmyindia_api_key_here
-MAPMYINDIA_CLIENT_ID=your_mapmyindia_client_id_here
-MAPMYINDIA_CLIENT_SECRET=your_mapmyindia_client_secret_here
-
-# Google Places API (Fallback - Optional)
+# Google Places API (Required)
 GOOGLE_PLACES_API_KEY=your_google_places_api_key_here
 
 # OpenAI API (Optional)
@@ -87,11 +82,12 @@ BOOKING_SEARCH_API_AUTH=your_booking_api_auth_token_here
 - The `.env.example` file contains placeholder values only
 - Replace all placeholder values with your actual API keys
 
-**Getting MapMyIndia API Keys (Free):**
-1. Visit [MapMyIndia Developer Portal](https://www.mapmyindia.com/api/)
-2. Sign up for a free account
-3. Create a new project and get your API key, Client ID, and Client Secret
-4. MapMyIndia provides free tier with generous limits for Indian locations
+**Getting Google Places API Key:**
+1. Visit [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the Google Places API
+4. Create credentials (API key) and restrict it to Google Places API
+5. Google provides free tier with generous limits for location services
 
 ### 3. Start Services
 
@@ -271,27 +267,28 @@ The system now handles complex booking events from external services with the fo
 - **Shopping** - Malls, markets, shopping centers
 - **Nightlife** - Bars, clubs, entertainment venues
 
-## MapMyIndia Integration
+## Google Places API Integration
 
-This system now uses **MapMyIndia API** as the primary mapping service, providing several advantages:
+This system uses **Google Places API** for location services, providing comprehensive location data:
 
 ### Benefits:
-- **Free Tier**: Generous free usage limits for Indian locations
-- **Local Expertise**: Better coverage and accuracy for Indian addresses and landmarks
-- **Cost Effective**: No charges for basic geocoding and place search operations
-- **Indian Focus**: Optimized for Indian geography and local businesses
+- **Comprehensive Data**: Extensive database of places worldwide
+- **High Accuracy**: Reliable geocoding and place information
+- **Rich Details**: Photos, reviews, ratings, and contact information
+- **Global Coverage**: Works well for locations worldwide including India
 
 ### Features:
-- **Geocoding**: Convert addresses to coordinates and vice versa
-- **Nearby Search**: Find restaurants, attractions, shopping centers, etc.
-- **Place Details**: Get additional information about places
-- **Fallback Support**: Automatically falls back to Google Places API if needed
+- **Geocoding**: Convert addresses to coordinates using Nominatim (OpenStreetMap)
+- **Coordinate Extraction**: Smart extraction from Google Maps links in booking data
+- **Nearby Search**: Find restaurants, attractions, shopping centers, ATMs, pharmacies, rentals
+- **Place Details**: Get additional information like phone numbers, websites, hours
+- **Distance Calculations**: Accurate distance calculations between locations
 
 ### API Coverage:
-- Geocoding and Reverse Geocoding
-- Nearby Places Search with categories
-- Place Details and Information
-- Distance Calculations
+- Nearby Places Search with multiple categories
+- Place Details with comprehensive information
+- Distance and rating-based sorting
+- Real-time data from Google's extensive database
 
 ## Development
 
@@ -352,10 +349,7 @@ treebo-chatbot/
 | `FLASK_ENV` | Flask environment | `development` |
 | `DATABASE_URL` | PostgreSQL connection string | `sqlite:///treebo_chatbot.db` |
 | `REDIS_URL` | Redis connection string | `redis://localhost:6379/0` |
-| `MAPMYINDIA_API_KEY` | MapMyIndia API key (Primary) | Required |
-| `MAPMYINDIA_CLIENT_ID` | MapMyIndia Client ID | Required |
-| `MAPMYINDIA_CLIENT_SECRET` | MapMyIndia Client Secret | Required |
-| `GOOGLE_PLACES_API_KEY` | Google Places API key (Fallback) | Optional |
+| `GOOGLE_PLACES_API_KEY` | Google Places API key | Required |
 | `WEBHOOK_SECRET` | Webhook signature verification | Optional |
 | `DEFAULT_LANGUAGE` | Default guest language | `en` |
 | `RECOMMENDATION_RADIUS` | Search radius in meters | `5000` |

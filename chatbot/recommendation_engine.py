@@ -5,32 +5,36 @@ from geopy.distance import geodesic
 from config.config import Config
 from config.database import get_redis_client
 from chatbot.models import Recommendation, db
-from chatbot.mapmyindia_service import MapMyIndiaService
+
 import json
 
 logger = logging.getLogger(__name__)
 
 class RecommendationEngine:
-    """Engine for fetching location-based recommendations using MapMyIndia API"""
+    """Engine for fetching location-based recommendations using Google Places API"""
 
     def __init__(self):
-        self.mapmyindia_service = MapMyIndiaService()
-        # Keep Google API as fallback
         self.google_api_key = Config.GOOGLE_PLACES_API_KEY
-        self.foursquare_api_key = Config.FOURSQUARE_API_KEY
         self.redis_client = get_redis_client()
         self.radius = Config.RECOMMENDATION_RADIUS
         self.max_results = Config.MAX_RECOMMENDATIONS_PER_CATEGORY
     
     def get_recommendations(self, latitude, longitude, category, language='en'):
         """Get recommendations for a specific location and category"""
+        logger.info(f"Getting {category} recommendations for location: {latitude}, {longitude}")
+
+        # Validate coordinates
+        if latitude is None or longitude is None:
+            logger.warning(f"Invalid coordinates for recommendations: lat={latitude}, lng={longitude}")
+            return []
+
         location_key = f"{latitude}_{longitude}_{category}_{language}"
-        
+
         # Check cache first
         cached_recommendations = self._get_cached_recommendations(location_key, language)
         if cached_recommendations:
             return cached_recommendations
-        
+
         # Fetch fresh recommendations
         recommendations = []
         
@@ -42,6 +46,12 @@ class RecommendationEngine:
             recommendations = self._get_shopping_recommendations(latitude, longitude)
         elif category == 'nightlife':
             recommendations = self._get_nightlife_recommendations(latitude, longitude)
+        elif category == 'atms':
+            recommendations = self._get_atm_recommendations(latitude, longitude)
+        elif category == 'pharmacy':
+            recommendations = self._get_pharmacy_recommendations(latitude, longitude)
+        elif category == 'rentals':
+            recommendations = self._get_rental_recommendations(latitude, longitude)
         
         # Cache the recommendations
         self._cache_recommendations(location_key, recommendations, language)
@@ -49,34 +59,12 @@ class RecommendationEngine:
         return recommendations
     
     def _get_restaurant_recommendations(self, latitude, longitude):
-        """Get restaurant recommendations using MapMyIndia API"""
-        try:
-            # Try MapMyIndia first
-            restaurants = self.mapmyindia_service.nearby_search(
-                latitude, longitude, 'restaurant', self.radius
-            )
-
-            # Enhance with additional details
-            enhanced_restaurants = []
-            for restaurant in restaurants[:self.max_results]:
-                # Get additional details if place_id is available
-                if restaurant.get('place_id'):
-                    details = self.mapmyindia_service.get_place_details(restaurant['place_id'])
-                    restaurant.update(details)
-
-                enhanced_restaurants.append(restaurant)
-
-            # Sort by distance since MapMyIndia doesn't provide ratings
-            return sorted(enhanced_restaurants, key=lambda x: x.get('distance', 999))
-
-        except Exception as e:
-            logger.error(f"Error fetching restaurant recommendations from MapMyIndia: {e}")
-
-            # Fallback to Google Places API if available
-            if self.google_api_key:
-                return self._get_restaurant_recommendations_google(latitude, longitude)
-
+        """Get restaurant recommendations using Google Places API"""
+        if not self.google_api_key:
+            logger.error("Google Places API key not configured")
             return []
+
+        return self._get_restaurant_recommendations_google(latitude, longitude)
 
     def _get_restaurant_recommendations_google(self, latitude, longitude):
         """Fallback method using Google Places API"""
@@ -123,36 +111,12 @@ class RecommendationEngine:
             return []
     
     def _get_sightseeing_recommendations(self, latitude, longitude):
-        """Get sightseeing recommendations using MapMyIndia API"""
-        try:
-            attractions = []
-
-            # Get different types of tourist attractions using MapMyIndia
-            for place_type in ['tourist_attraction', 'museum', 'park']:
-                places = self.mapmyindia_service.nearby_search(
-                    latitude, longitude, place_type, self.radius
-                )
-
-                for place in places:
-                    # Get additional details if place_id is available
-                    if place.get('place_id'):
-                        details = self.mapmyindia_service.get_place_details(place['place_id'])
-                        place.update(details)
-
-                    attractions.append(place)
-            
-            # Remove duplicates and sort by distance
-            unique_attractions = {attr['place_id']: attr for attr in attractions if attr.get('place_id')}.values()
-            return sorted(list(unique_attractions), key=lambda x: x.get('distance', 999))[:self.max_results]
-
-        except Exception as e:
-            logger.error(f"Error fetching sightseeing recommendations from MapMyIndia: {e}")
-
-            # Fallback to Google Places API if available
-            if self.google_api_key:
-                return self._get_sightseeing_recommendations_google(latitude, longitude)
-
+        """Get sightseeing recommendations using Google Places API"""
+        if not self.google_api_key:
+            logger.error("Google Places API key not configured")
             return []
+
+        return self._get_sightseeing_recommendations_google(latitude, longitude)
 
     def _get_sightseeing_recommendations_google(self, latitude, longitude):
         """Fallback method for sightseeing using Google Places API"""
@@ -204,113 +168,73 @@ class RecommendationEngine:
 
     
     def _get_shopping_recommendations(self, latitude, longitude):
-        """Get shopping recommendations using MapMyIndia API"""
-        try:
-            # Try MapMyIndia first
-            shopping_places = self.mapmyindia_service.nearby_search(
-                latitude, longitude, 'shopping_mall', self.radius
-            )
-
-            # Enhance with additional details
-            enhanced_places = []
-            for place in shopping_places[:self.max_results]:
-                # Get additional details if place_id is available
-                if place.get('place_id'):
-                    details = self.mapmyindia_service.get_place_details(place['place_id'])
-                    place.update(details)
-
-                enhanced_places.append(place)
-
-            return sorted(enhanced_places, key=lambda x: x.get('distance', 999))
-
-        except Exception as e:
-            logger.error(f"Error fetching shopping recommendations from MapMyIndia: {e}")
-
-            # Fallback to Google Places API if available
-            if self.google_api_key:
-                return self._get_shopping_recommendations_google(latitude, longitude)
-
+        """Get shopping recommendations using Google Places API"""
+        if not self.google_api_key:
+            logger.error("Google Places API key not configured")
             return []
 
+        return self._get_shopping_recommendations_google(latitude, longitude)
+
     def _get_shopping_recommendations_google(self, latitude, longitude):
-        """Fallback method for shopping using Google Places API"""
+        """Get shopping recommendations using Google Places API"""
         try:
-            url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
-            params = {
-                'location': f"{latitude},{longitude}",
-                'radius': self.radius,
-                'type': 'shopping_mall',
-                'key': self.google_api_key
-            }
-
-            response = requests.get(url, params=params)
-            data = response.json()
-
             shopping_places = []
-            for place in data.get('results', [])[:self.max_results]:
-                shop = {
-                    'name': place.get('name'),
-                    'rating': place.get('rating', 0),
-                    'address': place.get('vicinity'),
-                    'place_id': place.get('place_id'),
-                    'category': 'Shopping',
-                    'distance': self._calculate_distance(
-                        latitude, longitude,
-                        place['geometry']['location']['lat'],
-                        place['geometry']['location']['lng']
-                    )
+
+            # Search for different types of shopping places
+            for place_type in ['shopping_mall', 'store', 'clothing_store', 'electronics_store', 'department_store']:
+                url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+                params = {
+                    'location': f"{latitude},{longitude}",
+                    'radius': self.radius,
+                    'type': place_type,
+                    'key': self.google_api_key
                 }
 
-                details = self._get_place_details_google(place.get('place_id'))
-                if details:
-                    shop.update(details)
+                response = requests.get(url, params=params)
+                data = response.json()
 
-                shopping_places.append(shop)
+                for place in data.get('results', []):
+                    shop = {
+                        'name': place.get('name'),
+                        'rating': place.get('rating', 0),
+                        'address': place.get('vicinity'),
+                        'place_id': place.get('place_id'),
+                        'category': place_type.replace('_', ' ').title(),
+                        'distance': self._calculate_distance(
+                            latitude, longitude,
+                            place['geometry']['location']['lat'],
+                            place['geometry']['location']['lng']
+                        )
+                    }
 
-            return sorted(shopping_places, key=lambda x: x.get('rating', 0), reverse=True)
+                    details = self._get_place_details_google(place.get('place_id'))
+                    if details:
+                        shop.update(details)
+
+                    shopping_places.append(shop)
+
+            # Remove duplicates and sort by rating
+            unique_places = {place['place_id']: place for place in shopping_places if place.get('place_id')}.values()
+            return sorted(list(unique_places), key=lambda x: x.get('rating', 0), reverse=True)[:self.max_results]
 
         except Exception as e:
             logger.error(f"Error fetching shopping recommendations from Google: {e}")
             return []
     
     def _get_nightlife_recommendations(self, latitude, longitude):
-        """Get nightlife recommendations using MapMyIndia API"""
-        try:
-            nightlife_places = []
-
-            # Get different types of nightlife places using MapMyIndia
-            for place_type in ['bar', 'night_club']:
-                places = self.mapmyindia_service.nearby_search(
-                    latitude, longitude, place_type, self.radius
-                )
-
-                for place in places:
-                    # Get additional details if place_id is available
-                    if place.get('place_id'):
-                        details = self.mapmyindia_service.get_place_details(place['place_id'])
-                        place.update(details)
-
-                    nightlife_places.append(place)
-
-            # Remove duplicates and sort by distance
-            unique_places = {place['place_id']: place for place in nightlife_places if place.get('place_id')}.values()
-            return sorted(list(unique_places), key=lambda x: x.get('distance', 999))[:self.max_results]
-
-        except Exception as e:
-            logger.error(f"Error fetching nightlife recommendations from MapMyIndia: {e}")
-
-            # Fallback to Google Places API if available
-            if self.google_api_key:
-                return self._get_nightlife_recommendations_google(latitude, longitude)
-
+        """Get nightlife recommendations using Google Places API"""
+        if not self.google_api_key:
+            logger.error("Google Places API key not configured")
             return []
+
+        return self._get_nightlife_recommendations_google(latitude, longitude)
 
     def _get_nightlife_recommendations_google(self, latitude, longitude):
         """Fallback method for nightlife using Google Places API"""
         try:
             nightlife_places = []
 
-            for place_type in ['bar', 'night_club', 'casino']:
+            for place_type in ['bar', 'night_club', 'casino', 'bowling_alley']:
                 url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
                 params = {
                     'location': f"{latitude},{longitude}",
@@ -348,7 +272,147 @@ class RecommendationEngine:
         except Exception as e:
             logger.error(f"Error fetching nightlife recommendations from Google: {e}")
             return []
-    
+
+    def _get_atm_recommendations(self, latitude, longitude):
+        """Get ATM recommendations using Google Places API"""
+        if not self.google_api_key:
+            logger.error("Google Places API key not configured")
+            return []
+
+        try:
+            url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+            params = {
+                'location': f"{latitude},{longitude}",
+                'radius': self.radius,
+                'type': 'atm',
+                'key': self.google_api_key
+            }
+
+            response = requests.get(url, params=params)
+            data = response.json()
+
+            atms = []
+            for place in data.get('results', [])[:self.max_results]:
+                atm = {
+                    'name': place.get('name'),
+                    'rating': place.get('rating', 0),
+                    'address': place.get('vicinity'),
+                    'place_id': place.get('place_id'),
+                    'category': 'ATM',
+                    'distance': self._calculate_distance(
+                        latitude, longitude,
+                        place['geometry']['location']['lat'],
+                        place['geometry']['location']['lng']
+                    )
+                }
+
+                details = self._get_place_details_google(place.get('place_id'))
+                if details:
+                    atm.update(details)
+
+                atms.append(atm)
+
+            return sorted(atms, key=lambda x: x.get('distance', 999))
+
+        except Exception as e:
+            logger.error(f"Error fetching ATM recommendations from Google: {e}")
+            return []
+
+    def _get_pharmacy_recommendations(self, latitude, longitude):
+        """Get pharmacy recommendations using Google Places API"""
+        if not self.google_api_key:
+            logger.error("Google Places API key not configured")
+            return []
+
+        try:
+            url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+            params = {
+                'location': f"{latitude},{longitude}",
+                'radius': self.radius,
+                'type': 'pharmacy',
+                'key': self.google_api_key
+            }
+
+            response = requests.get(url, params=params)
+            data = response.json()
+
+            pharmacies = []
+            for place in data.get('results', [])[:self.max_results]:
+                pharmacy = {
+                    'name': place.get('name'),
+                    'rating': place.get('rating', 0),
+                    'address': place.get('vicinity'),
+                    'place_id': place.get('place_id'),
+                    'category': 'Pharmacy',
+                    'distance': self._calculate_distance(
+                        latitude, longitude,
+                        place['geometry']['location']['lat'],
+                        place['geometry']['location']['lng']
+                    )
+                }
+
+                details = self._get_place_details_google(place.get('place_id'))
+                if details:
+                    pharmacy.update(details)
+
+                pharmacies.append(pharmacy)
+
+            return sorted(pharmacies, key=lambda x: x.get('distance', 999))
+
+        except Exception as e:
+            logger.error(f"Error fetching pharmacy recommendations from Google: {e}")
+            return []
+
+    def _get_rental_recommendations(self, latitude, longitude):
+        """Get rental service recommendations using Google Places API"""
+        if not self.google_api_key:
+            logger.error("Google Places API key not configured")
+            return []
+
+        try:
+            rentals = []
+
+            # Search for car rental and bike rental services
+            for rental_type in ['car_rental', 'bicycle_store']:
+                url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+                params = {
+                    'location': f"{latitude},{longitude}",
+                    'radius': self.radius,
+                    'type': rental_type,
+                    'key': self.google_api_key
+                }
+
+                response = requests.get(url, params=params)
+                data = response.json()
+
+                for place in data.get('results', []):
+                    rental = {
+                        'name': place.get('name'),
+                        'rating': place.get('rating', 0),
+                        'address': place.get('vicinity'),
+                        'place_id': place.get('place_id'),
+                        'category': 'Rental Service',
+                        'distance': self._calculate_distance(
+                            latitude, longitude,
+                            place['geometry']['location']['lat'],
+                            place['geometry']['location']['lng']
+                        )
+                    }
+
+                    details = self._get_place_details_google(place.get('place_id'))
+                    if details:
+                        rental.update(details)
+
+                    rentals.append(rental)
+
+            # Remove duplicates and sort by distance
+            unique_rentals = {rental['place_id']: rental for rental in rentals if rental.get('place_id')}.values()
+            return sorted(list(unique_rentals), key=lambda x: x.get('distance', 999))[:self.max_results]
+
+        except Exception as e:
+            logger.error(f"Error fetching rental recommendations from Google: {e}")
+            return []
+
     def _get_place_details_google(self, place_id):
         """Get additional details for a place using Google Places API"""
         if not place_id:

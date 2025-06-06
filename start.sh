@@ -18,7 +18,6 @@ if [ ! -f .env ]; then
     echo "✅ Created .env file. Please edit it with your API keys:"
     echo "   - GOOGLE_PLACES_API_KEY"
     echo "   - OPENAI_API_KEY (optional)"
-    echo "   - FOURSQUARE_API_KEY (optional)"
     echo ""
     echo "Then run this script again."
     exit 1

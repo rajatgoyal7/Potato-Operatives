@@ -134,7 +134,7 @@ def create_app(config_name=None):
     def get_recommendations(session_id, category):
         """Get recommendations for a specific category"""
         try:
-            valid_categories = ['restaurants', 'sightseeing', 'shopping', 'nightlife']
+            valid_categories = ['restaurants', 'sightseeing', 'shopping', 'nightlife', 'atms', 'pharmacy', 'rentals']
             if category not in valid_categories:
                 return jsonify({'error': f'Invalid category. Must be one of: {valid_categories}'}), 400
 

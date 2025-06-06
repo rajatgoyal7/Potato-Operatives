@@ -5,7 +5,7 @@ from typing import Dict, List
 from chatbot.models import Booking, db
 from chatbot.chatbot_service import ChatbotService
 from chatbot.translation_service import TranslationService
-from chatbot.mapmyindia_service import MapMyIndiaService
+
 from chatbot.booking_search_service import BookingSearchService
 from geopy.geocoders import Nominatim
 import hashlib
@@ -19,9 +19,8 @@ class EventHandler:
     def __init__(self):
         self.chatbot_service = ChatbotService()
         self.translation_service = TranslationService()
-        self.mapmyindia_service = MapMyIndiaService()
         self.booking_search_service = BookingSearchService()
-        # Keep Nominatim as fallback
+        # Use Nominatim for geocoding
         self.geocoder = Nominatim(user_agent="treebo-chatbot")
     
     def verify_webhook_signature(self, payload, signature, secret):
@@ -149,10 +148,22 @@ class EventHandler:
                 logger.info(f"Booking {booking_id} already exists, creating new chat session...")
                 return self._update_existing_booking(existing_booking, booking_data)
 
-            # Get coordinates for hotel location if available
+            # Get coordinates for hotel location if available - try Google Maps link first
             coordinates = {'latitude': None, 'longitude': None}
-            if hotel_location:
-                coordinates = self._get_coordinates(hotel_location)
+
+            # Try to extract coordinates from Google Maps link first
+            maps_link = booking_data.get('hotel_maps_link', '')
+            if maps_link:
+                coordinates = self._extract_coordinates_from_maps_link(maps_link)
+                if coordinates and coordinates.get('latitude') and coordinates.get('longitude'):
+                    logger.info(f"Successfully extracted coordinates from maps link: {coordinates}")
+                else:
+                    logger.warning(f"Failed to extract coordinates from maps link: {maps_link}")
+
+            # Fallback to geocoding the address if maps link failed
+            if not coordinates or not coordinates.get('latitude'):
+                if hotel_location:
+                    coordinates = self._get_coordinates(hotel_location)
 
             # Create new booking record
             booking = Booking(
@@ -228,7 +239,21 @@ class EventHandler:
             
             if 'hotel_location' in booking_data:
                 booking.hotel_location = booking_data['hotel_location']
-                coordinates = self._get_coordinates(booking_data['hotel_location'])
+
+                # Try to extract coordinates from Google Maps link first, then address
+                coordinates = {'latitude': None, 'longitude': None}
+                maps_link = booking_data.get('hotel_maps_link', '')
+                if maps_link:
+                    coordinates = self._extract_coordinates_from_maps_link(maps_link)
+                    if coordinates and coordinates.get('latitude') and coordinates.get('longitude'):
+                        logger.info(f"Successfully extracted coordinates from maps link: {coordinates}")
+                    else:
+                        logger.warning(f"Failed to extract coordinates from maps link: {maps_link}")
+
+                # Fallback to geocoding the address if maps link failed
+                if not coordinates or not coordinates.get('latitude'):
+                    coordinates = self._get_coordinates(booking_data['hotel_location'])
+
                 booking.latitude = coordinates.get('latitude')
                 booking.longitude = coordinates.get('longitude')
                 updated_fields.extend(['hotel_location', 'coordinates'])
@@ -312,7 +337,21 @@ class EventHandler:
 
             if 'hotel_location' in booking_data:
                 booking.hotel_location = booking_data['hotel_location']
-                coordinates = self._get_coordinates(booking_data['hotel_location'])
+
+                # Try to extract coordinates from Google Maps link first, then address
+                coordinates = {'latitude': None, 'longitude': None}
+                maps_link = booking_data.get('hotel_maps_link', '')
+                if maps_link:
+                    coordinates = self._extract_coordinates_from_maps_link(maps_link)
+                    if coordinates and coordinates.get('latitude') and coordinates.get('longitude'):
+                        logger.info(f"Successfully extracted coordinates from maps link: {coordinates}")
+                    else:
+                        logger.warning(f"Failed to extract coordinates from maps link: {maps_link}")
+
+                # Fallback to geocoding the address if maps link failed
+                if not coordinates or not coordinates.get('latitude'):
+                    coordinates = self._get_coordinates(booking_data['hotel_location'])
+
                 booking.latitude = coordinates.get('latitude')
                 booking.longitude = coordinates.get('longitude')
 
@@ -396,30 +435,166 @@ class EventHandler:
         return message
     
     def _get_coordinates(self, location_string):
-        """Get latitude and longitude for a location using MapMyIndia API"""
+        """Get latitude and longitude for a location using Nominatim geocoding"""
         try:
-            # Try MapMyIndia first
-            result = self.mapmyindia_service.geocode_location(location_string)
-            if result and result.get('latitude') and result.get('longitude'):
-                return {
-                    'latitude': result['latitude'],
-                    'longitude': result['longitude']
-                }
+            logger.info(f"Geocoding location: {location_string}")
 
-            # Fallback to Nominatim
-            logger.info(f"MapMyIndia geocoding failed, trying Nominatim for: {location_string}")
-            location = self.geocoder.geocode(location_string)
-            if location:
-                return {
-                    'latitude': location.latitude,
-                    'longitude': location.longitude
-                }
-            else:
-                logger.warning(f"Could not geocode location with any service: {location_string}")
-                return {'latitude': None, 'longitude': None}
+            # Try different variations of the address for better geocoding success
+            address_variations = [
+                location_string,  # Original address
+                # Extract city and state from the address
+                self._extract_city_state(location_string),
+                # Try just the city name
+                self._extract_city_name(location_string)
+            ]
+
+            for address in address_variations:
+                if address:
+                    logger.info(f"Trying geocoding with: {address}")
+                    location = self.geocoder.geocode(address)
+                    if location:
+                        logger.info(f"Successfully geocoded '{address}' to: {location.latitude}, {location.longitude}")
+                        return {
+                            'latitude': location.latitude,
+                            'longitude': location.longitude
+                        }
+
+            logger.warning(f"Could not geocode location with any variation: {location_string}")
+            return {'latitude': None, 'longitude': None}
 
         except Exception as e:
             logger.error(f"Error geocoding location {location_string}: {e}")
+            return {'latitude': None, 'longitude': None}
+
+    def _extract_city_state(self, address):
+        """Extract city and state from address for better geocoding"""
+        try:
+            # Look for common patterns in Indian addresses
+            if 'Bengaluru' in address or 'Bangalore' in address:
+                return 'Bengaluru, Karnataka, India'
+            elif 'Mumbai' in address:
+                return 'Mumbai, Maharashtra, India'
+            elif 'Delhi' in address:
+                return 'Delhi, India'
+            elif 'Chennai' in address:
+                return 'Chennai, Tamil Nadu, India'
+            elif 'Kolkata' in address:
+                return 'Kolkata, West Bengal, India'
+            elif 'Hyderabad' in address:
+                return 'Hyderabad, Telangana, India'
+            elif 'Pune' in address:
+                return 'Pune, Maharashtra, India'
+
+            # Try to extract state and city from the address
+            parts = address.split(',')
+            if len(parts) >= 2:
+                # Look for state names in the address
+                for part in reversed(parts):
+                    part = part.strip()
+                    if any(state in part for state in ['Karnataka', 'Maharashtra', 'Delhi', 'Tamil Nadu', 'West Bengal', 'Telangana']):
+                        # Find the city part (usually before the state)
+                        state_index = parts.index(next(p for p in parts if state in p))
+                        if state_index > 0:
+                            city = parts[state_index - 1].strip()
+                            return f"{city}, {part}, India"
+                        else:
+                            return f"{part}, India"
+
+            return None
+        except Exception as e:
+            logger.error(f"Error extracting city/state from address: {e}")
+            return None
+
+    def _extract_city_name(self, address):
+        """Extract just the city name from address"""
+        try:
+            # Common city name patterns
+            city_patterns = [
+                'Bengaluru', 'Bangalore', 'Mumbai', 'Delhi', 'New Delhi',
+                'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad',
+                'Jaipur', 'Surat', 'Lucknow', 'Kanpur', 'Nagpur'
+            ]
+
+            for city in city_patterns:
+                if city in address:
+                    return f"{city}, India"
+
+            # If no known city found, try to extract from comma-separated parts
+            parts = address.split(',')
+            for part in parts:
+                part = part.strip()
+                # Look for parts that might be city names (avoid street addresses)
+                if len(part) > 3 and not any(char.isdigit() for char in part[:3]):
+                    return f"{part}, India"
+
+            return None
+        except Exception as e:
+            logger.error(f"Error extracting city name from address: {e}")
+            return None
+
+    def _extract_coordinates_from_maps_link(self, maps_link):
+        """Extract latitude and longitude from Google Maps link"""
+        try:
+            import re
+
+            logger.info(f"Extracting coordinates from maps link: {maps_link}")
+
+            # Google Maps URLs can have coordinates in different formats:
+            # Format 1: /@latitude,longitude,zoom
+            # Format 2: /place/name/@latitude,longitude,zoom
+            # Format 3: ?q=latitude,longitude
+            # Format 4: 3d parameter for latitude and 4d parameter for longitude
+
+            # Try format 1 and 2: /@latitude,longitude
+            pattern1 = r'/@(-?\d+\.?\d*),(-?\d+\.?\d*)'
+            match = re.search(pattern1, maps_link)
+            if match:
+                latitude = float(match.group(1))
+                longitude = float(match.group(2))
+                logger.info(f"Extracted coordinates using pattern 1: {latitude}, {longitude}")
+                return {'latitude': latitude, 'longitude': longitude}
+
+            # Try format 3: ?q=latitude,longitude
+            pattern2 = r'\?q=(-?\d+\.?\d*),(-?\d+\.?\d*)'
+            match = re.search(pattern2, maps_link)
+            if match:
+                latitude = float(match.group(1))
+                longitude = float(match.group(2))
+                logger.info(f"Extracted coordinates using pattern 2: {latitude}, {longitude}")
+                return {'latitude': latitude, 'longitude': longitude}
+
+            # Try format 4: 3d and 4d parameters
+            lat_pattern = r'3d(-?\d+\.?\d*)'
+            lng_pattern = r'4d(-?\d+\.?\d*)'
+
+            lat_match = re.search(lat_pattern, maps_link)
+            lng_match = re.search(lng_pattern, maps_link)
+
+            if lat_match and lng_match:
+                latitude = float(lat_match.group(1))
+                longitude = float(lng_match.group(1))
+                logger.info(f"Extracted coordinates using pattern 3: {latitude}, {longitude}")
+                return {'latitude': latitude, 'longitude': longitude}
+
+            # Try to find any coordinate-like patterns in the URL
+            coord_pattern = r'(-?\d+\.?\d+),(-?\d+\.?\d+)'
+            matches = re.findall(coord_pattern, maps_link)
+
+            for match in matches:
+                try:
+                    lat, lng = float(match[0]), float(match[1])
+                    # Basic validation: latitude should be between -90 and 90, longitude between -180 and 180
+                    if -90 <= lat <= 90 and -180 <= lng <= 180:
+                        logger.info(f"Extracted coordinates using general pattern: {lat}, {lng}")
+                        return {'latitude': lat, 'longitude': lng}
+                except ValueError:
+                    continue
+
+            logger.warning(f"Could not extract coordinates from maps link: {maps_link}")
+            return {'latitude': None, 'longitude': None}
+
+        except Exception as e:
+            logger.error(f"Error extracting coordinates from maps link: {e}")
             return {'latitude': None, 'longitude': None}
     
     def get_booking_summary(self, booking_id):
@@ -528,10 +703,22 @@ class EventHandler:
                 logger.info(f"Booking {booking_id} already exists, creating new chat session...")
                 return self._update_existing_booking(existing_booking, booking_data)
 
-            # Get coordinates for hotel location
+            # Get coordinates for hotel location - try Google Maps link first, then address
             coordinates = {'latitude': None, 'longitude': None}
-            if hotel_location and hotel_location != 'Location not provided':
-                coordinates = self._get_coordinates(hotel_location)
+
+            # Try to extract coordinates from Google Maps link first
+            maps_link = booking_data.get('hotel_maps_link', '')
+            if maps_link:
+                coordinates = self._extract_coordinates_from_maps_link(maps_link)
+                if coordinates and coordinates.get('latitude') and coordinates.get('longitude'):
+                    logger.info(f"Successfully extracted coordinates from maps link: {coordinates}")
+                else:
+                    logger.warning(f"Failed to extract coordinates from maps link: {maps_link}")
+
+            # Fallback to geocoding the address if maps link failed
+            if not coordinates or not coordinates.get('latitude'):
+                if hotel_location and hotel_location != 'Location not provided':
+                    coordinates = self._get_coordinates(hotel_location)
 
             # Parse dates
             check_in_date = None

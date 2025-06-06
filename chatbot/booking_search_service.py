@@ -220,6 +220,7 @@ class BookingSearchService:
             hotel_details = booking_data.get('hotel_details', {})
             hotel_name = hotel_details.get('hotel_name', 'Unknown Hotel')
             hotel_location = hotel_details.get('legal_address', hotel_details.get('postal_address', 'Unknown Location'))
+            maps_link = hotel_details.get('maps_link', '')
 
             # Extract common fields with fallbacks for the actual API structure
             booking_info = {
@@ -230,6 +231,7 @@ class BookingSearchService:
                 'guest_phone': booking_data.get('guest_phone', ''),
                 'hotel_name': hotel_name,
                 'hotel_location': hotel_location,
+                'hotel_maps_link': maps_link,
                 'hotel_id': booking_data.get('hotel_code'),
                 'check_in_date': self._parse_date_string(booking_data.get('check_in')),
                 'check_out_date': self._parse_date_string(booking_data.get('check_out')),
