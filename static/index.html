@@ -1130,6 +1130,7 @@
         function handleUserInput(message) {
             switch (currentState) {
                 case 'phone':
+                case 'phone_entry':  // Handle both phone states
                     handlePhoneInput(message);
                     break;
                 case 'booking_selection':
@@ -1143,6 +1144,9 @@
 
         // Handle phone number input
         async function handlePhoneInput(phone) {
+            console.log('handlePhoneInput called with phone:', phone);
+            console.log('Current state:', currentState);
+
             userPhone = phone;
 
             showTyping();
@@ -1150,6 +1154,8 @@
             hideTyping();
 
             try {
+                console.log('Starting login API call for phone:', phone);
+
                 // Login user first
                 const loginResponse = await fetch('/user/login', {
                     method: 'POST',
@@ -1160,11 +1166,15 @@
                     })
                 });
 
+                console.log('Login response status:', loginResponse.status);
+
                 if (loginResponse.ok) {
                     const loginResult = await loginResponse.json();
                     sessionToken = loginResult.session_token;
+                    console.log('Login successful, session token:', sessionToken);
 
                     // Search for bookings
+                    console.log('Starting booking search API call');
                     const searchResponse = await fetch('/bookings/search', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1173,7 +1183,10 @@
                         })
                     });
 
+                    console.log('Booking search response status:', searchResponse.status);
                     const searchResult = await searchResponse.json();
+                    console.log('Booking search result:', searchResult);
+                    console.log('API result structure:', JSON.stringify(searchResult.api_result, null, 2));
 
                     if (searchResponse.ok && searchResult.bookings && searchResult.bookings.length > 0) {
                         showBookingOptions(searchResult);
@@ -1183,10 +1196,14 @@
                         enableInput();
                     }
                 } else {
+                    console.error('Login failed with status:', loginResponse.status);
+                    const errorData = await loginResponse.json();
+                    console.error('Login error data:', errorData);
                     addBotMessage("Sorry, there was an error. Please try again.");
                     enableInput();
                 }
             } catch (error) {
+                console.error('Error in handlePhoneInput:', error);
                 addBotMessage("Sorry, there was a connection error. Please try again.");
                 enableInput();
             }
@@ -1194,6 +1211,8 @@
 
         // Show booking options with booking ID as title
         function showBookingOptions(searchResult) {
+            console.log('showBookingOptions called with:', searchResult);
+
             const messagesContainer = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message bot';
@@ -1207,28 +1226,75 @@
             // Use real booking data from API response
             let realBookings = [];
 
-            if (searchResult.bookings && searchResult.bookings.length > 0) {
-                // Create booking objects from the IDs (in real implementation, you'd fetch full details)
+            // Check multiple possible API response structures
+            let apiBookings = [];
+
+            // Try different possible structures
+            if (searchResult.api_result && searchResult.api_result.data) {
+                if (searchResult.api_result.data.data && searchResult.api_result.data.data.bookings) {
+                    // Nested data structure
+                    apiBookings = searchResult.api_result.data.data.bookings;
+                    console.log('Using booking data from nested api_result.data.data.bookings');
+                } else if (searchResult.api_result.data.bookings) {
+                    // Direct data structure
+                    apiBookings = searchResult.api_result.data.bookings;
+                    console.log('Using booking data from api_result.data.bookings');
+                }
+            }
+
+            if (apiBookings.length > 0) {
+                console.log('Raw API bookings:', apiBookings);
+
+                realBookings = apiBookings.map(booking => {
+                    console.log('Processing booking:', booking);
+                    const hotelDetails = booking.hotel_details || {};
+
+                    const processedBooking = {
+                        id: booking.booking_id,
+                        hotel_name: hotelDetails.hotel_name || booking.hotel_name || 'Unknown Hotel',
+                        location: hotelDetails.legal_address || hotelDetails.postal_address || booking.location || 'Unknown Location',
+                        check_in: booking.check_in || 'Unknown',
+                        check_out: booking.check_out || 'Unknown',
+                        status: booking.status || 'confirmed',
+                        group_code: booking.group_code,
+                        hotel_code: booking.hotel_code || booking.hotel_id,
+                        guest_name: booking.guest_name || 'Guest',
+                        guest_email: booking.guest_email || '',
+                        guest_phone: booking.guest_phone || ''
+                    };
+
+                    console.log('Processed booking:', processedBooking);
+                    return processedBooking;
+                });
+            } else if (searchResult.bookings && searchResult.bookings.length > 0) {
+                console.log('Using fallback booking data from bookings array');
+                // Fallback to booking IDs only (this shouldn't happen with real API)
                 realBookings = searchResult.bookings.map((bookingId, index) => ({
                     id: bookingId,
-                    hotel_name: 'Treebo Club Worldtree Staging',
-                    location: 'Bengaluru, Karnataka',
+                    hotel_name: 'Treebo Hotel',
+                    location: 'Location Unknown',
                     check_in: '2025-06-06',
                     check_out: '2025-06-07',
-                    status: index === 0 ? 'reserved' : 'confirmed'
+                    status: 'confirmed'
                 }));
             }
 
+            console.log('Processed bookings:', realBookings);
+
             realBookings.forEach((booking, index) => {
                 const statusEmoji = booking.status === 'reserved' ? '🟢' :
-                                  booking.status === 'confirmed' ? '🟡' : '✅';
+                                  booking.status === 'confirmed' ? '🟡' :
+                                  booking.status === 'checked_in' ? '🔵' : '✅';
+
+                // Extract city from location for cleaner display
+                const cityName = extractCityFromLocation(booking.location);
 
                 bookingsHtml += `
                     <div class="booking-card" onclick="selectBooking(${index})">
                         <div class="booking-title">${booking.id}</div>
                         <div class="booking-details">
                             🏨 ${booking.hotel_name}<br>
-                            📍 ${booking.location}<br>
+                            📍 ${cityName}<br>
                             📅 ${booking.check_in} to ${booking.check_out}<br>
                             ${statusEmoji} ${booking.status}
                         </div>
@@ -1458,6 +1524,36 @@
             return servicePrices[category] || 'Varies';
         }
 
+        // Helper function to extract city name from full address
+        function extractCityFromLocation(location) {
+            if (!location) return 'Unknown Location';
+
+            // Common city names in India
+            const cities = ['bangalore', 'bengaluru', 'mumbai', 'delhi', 'chennai', 'kolkata', 'hyderabad', 'pune', 'ahmedabad', 'jaipur', 'gurgaon', 'gurugram', 'noida', 'ghaziabad', 'faridabad', 'lucknow', 'kanpur', 'nagpur', 'indore', 'thane', 'bhopal', 'visakhapatnam', 'patna', 'vadodara', 'ludhiana', 'agra', 'nashik', 'meerut', 'rajkot', 'varanasi', 'srinagar', 'aurangabad', 'dhanbad', 'amritsar', 'allahabad', 'ranchi', 'coimbatore', 'jabalpur', 'gwalior', 'vijayawada', 'jodhpur', 'madurai', 'raipur', 'kota', 'guwahati', 'chandigarh', 'solapur', 'hubli', 'tiruchirappalli', 'bareilly', 'mysore', 'tiruppur', 'aligarh', 'jalandhar', 'bhubaneswar', 'salem', 'warangal', 'guntur', 'bhiwandi', 'saharanpur', 'gorakhpur', 'bikaner', 'amravati', 'jamshedpur', 'bhilai', 'cuttack', 'firozabad', 'kochi', 'nellore', 'bhavnagar', 'dehradun', 'durgapur', 'asansol', 'rourkela', 'nanded', 'kolhapur', 'ajmer', 'akola', 'gulbarga', 'jamnagar', 'ujjain', 'loni', 'siliguri', 'jhansi', 'ulhasnagar', 'jammu', 'sangli', 'mangalore', 'erode', 'belgaum', 'ambattur', 'tirunelveli', 'malegaon', 'gaya', 'jalgaon', 'udaipur', 'maheshtala'];
+
+            const lowerLocation = location.toLowerCase();
+
+            // Find city name in the location string
+            for (const city of cities) {
+                if (lowerLocation.includes(city)) {
+                    return city.charAt(0).toUpperCase() + city.slice(1);
+                }
+            }
+
+            // If no known city found, try to extract from comma-separated parts
+            const parts = location.split(',');
+            if (parts.length >= 2) {
+                // Usually city is the second last part
+                const potentialCity = parts[parts.length - 2].trim();
+                if (potentialCity.length > 2 && potentialCity.length < 30) {
+                    return potentialCity;
+                }
+            }
+
+            // Return first part if nothing else works
+            return parts[0].trim() || 'Unknown Location';
+        }
+
         // Show itinerary options
         function showItineraryOptions() {
             addUserMessage(translations[selectedLanguage].itinerary);
@@ -1499,22 +1595,23 @@
                         // Display the AI-generated itinerary with special formatting
                         addItineraryMessage(result.itinerary.message);
 
-                        // Add back to menu option
+                        // Add options after showing itinerary
                         setTimeout(() => {
                             const messagesContainer = document.getElementById('chatMessages');
                             const messageDiv = document.createElement('div');
                             messageDiv.className = 'message bot';
 
-                            const backHtml = `
+                            const optionsHtml = `
                                 <div class="message-avatar">🤖</div>
                                 <div class="message-content">
                                     <div class="option-buttons">
                                         <div class="option-button" onclick="showMainOptions()">🔙 Back to Menu</div>
+                                        <div class="option-button" onclick="changeBooking()">🔄 Change Booking</div>
                                     </div>
                                 </div>
                             `;
 
-                            messageDiv.innerHTML = backHtml;
+                            messageDiv.innerHTML = optionsHtml;
                             messagesContainer.appendChild(messageDiv);
                             scrollToBottom();
                         }, 1000);
@@ -1608,9 +1705,25 @@
             // Store recommendations for detail view
             window.currentRecommendations = recommendations;
 
-            // Add explore more options after showing recommendations
+            // Add options after showing recommendations
             setTimeout(() => {
-                showExploreMoreOptions();
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message bot';
+
+                const optionsHtml = `
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <div class="option-buttons">
+                            <div class="option-button" onclick="showExploreMoreOptions()">🔍 Explore More Options</div>
+                            <div class="option-button" onclick="changeBooking()">🔄 Change Booking</div>
+                        </div>
+                    </div>
+                `;
+
+                messageDiv.innerHTML = optionsHtml;
+                messagesContainer.appendChild(messageDiv);
+                scrollToBottom();
             }, 1000);
         }
 
@@ -1778,9 +1891,25 @@
             // Store services for detail view
             window.currentServices = services;
 
-            // Add explore more options after showing services
+            // Add options after showing services
             setTimeout(() => {
-                showExploreMoreOptions();
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message bot';
+
+                const optionsHtml = `
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <div class="option-buttons">
+                            <div class="option-button" onclick="showExploreMoreOptions()">🔍 Explore More Options</div>
+                            <div class="option-button" onclick="changeBooking()">🔄 Change Booking</div>
+                        </div>
+                    </div>
+                `;
+
+                messageDiv.innerHTML = optionsHtml;
+                messagesContainer.appendChild(messageDiv);
+                scrollToBottom();
             }, 1000);
         }
 
@@ -2012,6 +2141,70 @@
                     // Or show a "Chat Closed" overlay
                 }, 1000);
             }, 500);
+        }
+
+        // Change booking function
+        function changeBooking() {
+            addUserMessage("Change Booking");
+
+            console.log('changeBooking called, availableBookings:', availableBookings);
+
+            // Check if user has multiple bookings
+            if (availableBookings && availableBookings.length > 1) {
+                addBotMessage("I can help you switch to a different booking. Here are your available bookings:");
+
+                setTimeout(() => {
+                    // Create a search result object to pass to showBookingOptions
+                    const searchResult = {
+                        bookings: availableBookings.map(b => b.id),
+                        api_result: {
+                            data: {
+                                bookings: availableBookings.map(booking => ({
+                                    booking_id: booking.id,
+                                    hotel_details: {
+                                        hotel_name: booking.hotel_name,
+                                        legal_address: booking.location
+                                    },
+                                    check_in: booking.check_in,
+                                    check_out: booking.check_out,
+                                    status: booking.status,
+                                    group_code: booking.group_code,
+                                    hotel_code: booking.hotel_code,
+                                    guest_name: booking.guest_name,
+                                    guest_email: booking.guest_email,
+                                    guest_phone: booking.guest_phone
+                                }))
+                            }
+                        }
+                    };
+
+                    showBookingOptions(searchResult);
+                }, 1000);
+            } else if (availableBookings && availableBookings.length === 1) {
+                addBotMessage("You currently have only one booking. To search for different bookings, please provide your phone number again.");
+
+                setTimeout(() => {
+                    // Reset to phone number entry
+                    currentState = 'phone_entry';
+                    userPhone = '';
+                    availableBookings = [];
+                    selectedBooking = null;
+
+                    addBotMessage("Please enter your phone number to search for bookings:");
+                    enableInput();
+                }, 1500);
+            } else {
+                addBotMessage("No bookings found. Please enter your phone number to search for bookings:");
+
+                setTimeout(() => {
+                    // Reset to phone number entry
+                    currentState = 'phone_entry';
+                    userPhone = '';
+                    availableBookings = [];
+                    selectedBooking = null;
+                    enableInput();
+                }, 1000);
+            }
         }
 
         // Customize itinerary
