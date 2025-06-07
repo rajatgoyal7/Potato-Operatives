@@ -748,7 +748,6 @@
                 pharmacy: "💊 Pharmacy",
                 rentals: "🚗 Car/Bike Rentals",
                 itinerary: "📅 Travel Itinerary",
-                packages: "🎁 Travel Packages",
                 exploreMorePrompt: "Would you like to explore more options or need help with anything else?",
                 yes: "✅ Yes",
                 no: "❌ No",
@@ -1319,7 +1318,6 @@
                         <div class="option-button" onclick="getServices('pharmacy')">${translations[selectedLanguage].pharmacy}</div>
                         <div class="option-button" onclick="getServices('rentals')">${translations[selectedLanguage].rentals}</div>
                         <div class="option-button" onclick="showItineraryOptions()">${translations[selectedLanguage].itinerary}</div>
-                        <div class="option-button" onclick="showTravelPackages()">${translations[selectedLanguage].packages}</div>
                     </div>
                 </div>
             `;
@@ -1539,49 +1537,7 @@
 
 
 
-        // Show travel packages
-        function showTravelPackages() {
-            addUserMessage(translations[selectedLanguage].packages);
 
-            showTyping();
-
-            setTimeout(() => {
-                hideTyping();
-
-                const packages = [
-                    {
-                        name: "Heritage Explorer Package",
-                        price: "₹2,999",
-                        duration: "Full Day",
-                        includes: "Guide + Transport + Lunch + Entry Fees",
-                        description: "Explore historical sites with expert guide"
-                    },
-                    {
-                        name: "Foodie Adventure Package",
-                        price: "₹1,899",
-                        duration: "Half Day",
-                        includes: "Food Tour + 5 Restaurants + Guide",
-                        description: "Taste authentic local cuisine"
-                    },
-                    {
-                        name: "Shopping & Spa Package",
-                        price: "₹3,499",
-                        duration: "Full Day",
-                        includes: "Shopping Guide + Spa Session + Transport",
-                        description: "Shop and relax in style"
-                    },
-                    {
-                        name: "Adventure Sports Package",
-                        price: "₹4,299",
-                        duration: "Full Day",
-                        includes: "Activities + Equipment + Instructor + Lunch",
-                        description: "Thrilling outdoor adventures"
-                    }
-                ];
-
-                showPackages(packages);
-            }, 1500);
-        }
 
         // Show recommendations in chat with interactive cards
         function showRecommendations(recommendations, category) {
@@ -1930,86 +1886,9 @@
             scrollToBottom();
         }
 
-        // Show travel packages
-        function showPackages(packages) {
-            const messagesContainer = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message bot';
 
-            let packagesHtml = `
-                <div class="message-avatar">🤖</div>
-                <div class="message-content">
-                    Here are our exclusive travel packages:
-            `;
 
-            packages.forEach((pkg, index) => {
-                packagesHtml += `
-                    <div class="itinerary-card" onclick="selectPackage(${index})">
-                        <div class="itinerary-title">${pkg.name}</div>
-                        <div class="itinerary-details">
-                            <span>${pkg.duration}</span>
-                            <span class="price-tag">${pkg.price}</span>
-                        </div>
-                        <div style="font-size: 0.8rem; color: #666; margin-top: 4px;">
-                            ${pkg.includes}
-                        </div>
-                        <div style="font-size: 0.85rem; color: #555; margin-top: 6px;">
-                            ${pkg.description}
-                        </div>
-                    </div>
-                `;
-            });
 
-            packagesHtml += `</div>`;
-            messageDiv.innerHTML = packagesHtml;
-            messagesContainer.appendChild(messageDiv);
-            scrollToBottom();
-        }
-
-        // Package selection
-        function selectPackage(index) {
-            const packages = [
-                { name: "Heritage Explorer Package", price: "₹2,999" },
-                { name: "Foodie Adventure Package", price: "₹1,899" },
-                { name: "Shopping & Spa Package", price: "₹3,499" },
-                { name: "Adventure Sports Package", price: "₹4,299" }
-            ];
-
-            const selectedPackage = packages[index];
-            addUserMessage(`Selected: ${selectedPackage.name}`);
-
-            setTimeout(() => {
-                addBotMessage(`Great choice! The ${selectedPackage.name} costs ${selectedPackage.price}. Would you like to proceed with booking?`);
-
-                const messagesContainer = document.getElementById('chatMessages');
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message bot';
-
-                const bookingHtml = `
-                    <div class="message-avatar">🤖</div>
-                    <div class="message-content">
-                        <div class="option-buttons">
-                            <div class="option-button" onclick="bookPackage('${selectedPackage.name}', '${selectedPackage.price}')">✅ Book Now</div>
-                            <div class="option-button" onclick="showMainOptions()">🔙 Back to Menu</div>
-                        </div>
-                    </div>
-                `;
-
-                messageDiv.innerHTML = bookingHtml;
-                messagesContainer.appendChild(messageDiv);
-                scrollToBottom();
-            }, 500);
-        }
-
-        // Book package
-        function bookPackage(packageName, price) {
-            addUserMessage("Book Now");
-            addBotMessage(`Perfect! I'm processing your booking for ${packageName} at ${price}. You'll receive a confirmation shortly. Our team will contact you within 30 minutes to finalize the details.`);
-
-            setTimeout(() => {
-                showExploreMoreOptions();
-            }, 2000);
-        }
 
         // Book itinerary
         function bookItinerary() {
@@ -2162,8 +2041,6 @@
                     getServices('atm');
                 } else if (lowerMessage.includes('itinerary') || lowerMessage.includes('plan')) {
                     showItineraryOptions();
-                } else if (lowerMessage.includes('package') || lowerMessage.includes('tour')) {
-                    showTravelPackages();
                 } else {
                     addBotMessage("I'm here to help! You can ask me about restaurants, attractions, shopping, services like atm and pharmacy, or I can create a travel itinerary for you. What interests you most?");
                     enableInput();
